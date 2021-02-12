@@ -18,28 +18,24 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMSchematicsStateDataSourceBasic(t *testing.T) {
-	wID := fmt.Sprintf("w_id_%d", acctest.RandIntRange(10, 100))
-	tID := fmt.Sprintf("t_id_%d", acctest.RandIntRange(10, 100))
+	wID := workspaceID
+	tID := templateID
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:	func() { testAccPreCheck(t) },
-		Providers:	testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMSchematicsStateDataSourceConfigBasic(wID, tID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_state.schematics_state", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_state.schematics_state", "version"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_state.schematics_state", "terraform_version"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_state.schematics_state", "serial"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_state.schematics_state", "lineage"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_state.schematics_state", "modules.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_state.schematics_state", "state_store"),
 				),
 			},
 		},
@@ -54,4 +50,3 @@ func testAccCheckIBMSchematicsStateDataSourceConfigBasic(wID string, tID string)
 		}
 	`, wID, tID)
 }
-

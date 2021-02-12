@@ -18,17 +18,18 @@ package ibm
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"testing"
 )
 
 func TestAccIBMSchematicsJobDataSourceBasic(t *testing.T) {
-	jobID := fmt.Sprintf("job_id_%d", acctest.RandIntRange(10, 100))
+	jobID := jobID
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:	func() { testAccPreCheck(t) },
-		Providers:	testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMSchematicsJobDataSourceConfigBasic(jobID),
@@ -37,10 +38,8 @@ func TestAccIBMSchematicsJobDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_object"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_object_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_name"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_parameter"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_options.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "inputs.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "settings.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "tags.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "description"),
@@ -52,13 +51,7 @@ func TestAccIBMSchematicsJobDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "end_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "duration"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "status.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "data.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "targets_ini"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "bastion.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "log_summary.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "log_store_url"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "state_store_url"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "results_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "updated_at"),
 				),
 			},
@@ -71,8 +64,8 @@ func TestAccIBMSchematicsJobDataSourceAllArgs(t *testing.T) {
 	profile := "summary"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:	func() { testAccPreCheck(t) },
-		Providers:	testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMSchematicsJobDataSourceConfig(jobID, profile),
@@ -126,4 +119,3 @@ func testAccCheckIBMSchematicsJobDataSourceConfigBasic(jobID string) string {
 		}
 	`, jobID)
 }
-

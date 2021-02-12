@@ -18,24 +18,23 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccIBMSchematicsWorkspaceDataSourceBasic(t *testing.T) {
-	wID := fmt.Sprintf("w_id_%d", acctest.RandIntRange(10, 100))
+	wID := workspaceID
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:	func() { testAccPreCheck(t) },
-		Providers:	testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMSchematicsWorkspaceDataSourceConfigBasic(wID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "applied_shareddata_ids.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "catalog_ref.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "crn"),
@@ -49,7 +48,6 @@ func TestAccIBMSchematicsWorkspaceDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "status"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "tags.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_data.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_ref"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "template_repo.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "type.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_workspace.schematics_workspace", "updated_at"),
@@ -69,4 +67,3 @@ func testAccCheckIBMSchematicsWorkspaceDataSourceConfigBasic(wID string) string 
 		}
 	`, wID)
 }
-

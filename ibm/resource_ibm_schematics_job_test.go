@@ -18,11 +18,12 @@ package ibm
 
 import (
 	"fmt"
+	"testing"
+
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"testing"
 )
 
 func TestAccIBMSchematicsJobBasic(t *testing.T) {
@@ -55,17 +56,17 @@ func TestAccIBMSchematicsJobBasic(t *testing.T) {
 func TestAccIBMSchematicsJobAllArgs(t *testing.T) {
 	var conf schematicsv1.Job
 	refreshToken := fmt.Sprintf("refresh_token_%d", acctest.RandIntRange(10, 100))
-	commandObject := "workspace"
-	commandObjectID := fmt.Sprintf("command_object_id_%d", acctest.RandIntRange(10, 100))
-	commandName := "workspace_init_flow"
-	commandParameter := fmt.Sprintf("command_parameter_%d", acctest.RandIntRange(10, 100))
-	location := "us_south"
+	commandObject := "action"
+	commandObjectID := actionID
+	commandName := "ansible_playbook_run"
+	commandParameter := "ssh_user.yml"
+	location := "us-east"
 	refreshTokenUpdate := fmt.Sprintf("refresh_token_%d", acctest.RandIntRange(10, 100))
 	commandObjectUpdate := "action"
-	commandObjectIDUpdate := fmt.Sprintf("command_object_id_%d", acctest.RandIntRange(10, 100))
-	commandNameUpdate := "opa_evaluate"
-	commandParameterUpdate := fmt.Sprintf("command_parameter_%d", acctest.RandIntRange(10, 100))
-	locationUpdate := "eu_de"
+	commandObjectIDUpdate := actionID
+	commandNameUpdate := "ansible_playbook_run"
+	commandParameterUpdate := "ssh_user.yml"
+	locationUpdate := "us-east"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -94,11 +95,6 @@ func TestAccIBMSchematicsJobAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_schematics_job.schematics_job", "command_parameter", commandParameterUpdate),
 					resource.TestCheckResourceAttr("ibm_schematics_job.schematics_job", "location", locationUpdate),
 				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_schematics_job.schematics_job",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})

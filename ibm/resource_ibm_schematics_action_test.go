@@ -18,11 +18,11 @@ package ibm
 
 import (
 	"fmt"
+	"testing"
+
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"testing"
 )
 
 func TestAccIBMSchematicsActionBasic(t *testing.T) {
@@ -39,78 +39,6 @@ func TestAccIBMSchematicsActionBasic(t *testing.T) {
 					testAccCheckIBMSchematicsActionExists("ibm_schematics_action.schematics_action", conf),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMSchematicsActionConfigBasic(),
-				Check:  resource.ComposeAggregateTestCheckFunc(),
-			},
-		},
-	})
-}
-
-func TestAccIBMSchematicsActionAllArgs(t *testing.T) {
-	var conf schematicsv1.Action
-	name := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	description := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
-	location := "us_south"
-	resourceGroup := fmt.Sprintf("resource_group_%d", acctest.RandIntRange(10, 100))
-	sourceReadmeURL := fmt.Sprintf("source_readme_url_%d", acctest.RandIntRange(10, 100))
-	sourceType := "local"
-	commandParameter := fmt.Sprintf("command_parameter_%d", acctest.RandIntRange(10, 100))
-	targetsIni := fmt.Sprintf("targets_ini_%d", acctest.RandIntRange(10, 100))
-	triggerRecordID := fmt.Sprintf("trigger_record_id_%d", acctest.RandIntRange(10, 100))
-	xGithubToken := fmt.Sprintf("X-Github-token_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	descriptionUpdate := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
-	locationUpdate := "eu_de"
-	resourceGroupUpdate := fmt.Sprintf("resource_group_%d", acctest.RandIntRange(10, 100))
-	sourceReadmeURLUpdate := fmt.Sprintf("source_readme_url_%d", acctest.RandIntRange(10, 100))
-	sourceTypeUpdate := "external_scm"
-	commandParameterUpdate := fmt.Sprintf("command_parameter_%d", acctest.RandIntRange(10, 100))
-	targetsIniUpdate := fmt.Sprintf("targets_ini_%d", acctest.RandIntRange(10, 100))
-	triggerRecordIDUpdate := fmt.Sprintf("trigger_record_id_%d", acctest.RandIntRange(10, 100))
-	xGithubTokenUpdate := fmt.Sprintf("X-Github-token_%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMSchematicsActionDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMSchematicsActionConfig(name, description, location, resourceGroup, sourceReadmeURL, sourceType, commandParameter, targetsIni, triggerRecordID, xGithubToken),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMSchematicsActionExists("ibm_schematics_action.schematics_action", conf),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "name", name),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "description", description),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "location", location),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "resource_group", resourceGroup),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "source_readme_url", sourceReadmeURL),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "source_type", sourceType),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "command_parameter", commandParameter),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "targets_ini", targetsIni),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "trigger_record_id", triggerRecordID),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "X-Github-token", xGithubToken),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIBMSchematicsActionConfig(nameUpdate, descriptionUpdate, locationUpdate, resourceGroupUpdate, sourceReadmeURLUpdate, sourceTypeUpdate, commandParameterUpdate, targetsIniUpdate, triggerRecordIDUpdate, xGithubTokenUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "location", locationUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "resource_group", resourceGroupUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "source_readme_url", sourceReadmeURLUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "source_type", sourceTypeUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "command_parameter", commandParameterUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "targets_ini", targetsIniUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "trigger_record_id", triggerRecordIDUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_action.schematics_action", "X-Github-token", xGithubTokenUpdate),
-				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_schematics_action.schematics_action",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
 		},
 	})
 }
@@ -119,6 +47,10 @@ func testAccCheckIBMSchematicsActionConfigBasic() string {
 	return fmt.Sprintf(`
 
 		resource "ibm_schematics_action" "schematics_action" {
+			name = "tf-acc-test-schematics-actions"
+			description = "tf-acc-test-schematics-actions"
+			location = "us-east"
+			resource_group = "default"
 		}
 	`)
 }
@@ -157,6 +89,7 @@ func testAccCheckIBMSchematicsActionExists(n string, obj schematicsv1.Action) re
 		getActionOptions := &schematicsv1.GetActionOptions{}
 
 		getActionOptions.SetActionID(rs.Primary.ID)
+		getActionOptions.SetProfile("detailed")
 
 		action, _, err := schematicsClient.GetAction(getActionOptions)
 		if err != nil {
