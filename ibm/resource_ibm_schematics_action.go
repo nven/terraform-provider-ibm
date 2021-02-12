@@ -18,10 +18,12 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/IBM/go-sdk-core/v4/core"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
-	"null"
+
+	"github.com/IBM/go-sdk-core/v4/core"
+	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
+	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMSchematicsAction() *schema.Resource {
@@ -870,7 +872,7 @@ func resourceIBMSchematicsActionCreate(d *schema.ResourceData, meta interface{})
 		createActionOptions.SetResourceGroup(d.Get("resource_group").(string))
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		createActionOptions.SetTags(d.Get("tags"))
+		createActionOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("user_state"); ok {
 		userState := resourceIBMSchematicsActionMapToUserState(d.Get("user_state.0").(map[string]interface{}))
@@ -968,7 +970,10 @@ func resourceIBMSchematicsActionMapToUserState(userStateMap map[string]interface
 		userState.SetBy = core.StringPtr(userStateMap["set_by"].(string))
 	}
 	if userStateMap["set_at"] != nil {
-	
+		setAt, err := strfmt.ParseDateTime(userStateMap["set_at"].(string))
+		if err != nil {
+			userState.SetAt = &setAt
+		}
 	}
 
 	return userState
@@ -979,7 +984,8 @@ func resourceIBMSchematicsActionMapToExternalSource(externalSourceMap map[string
 
 	externalSource.SourceType = core.StringPtr(externalSourceMap["source_type"].(string))
 	if externalSourceMap["git"] != nil {
-		// TODO: handle Git of type ExternalSourceGit -- not primitive type, not list
+		externalSourceGit := resourceIBMSchematicsActionMapToExternalSourceGit(externalSourceMap["git"].([]interface{})[0].(map[string]interface{}))
+		externalSource.Git = &externalSourceGit
 	}
 
 	return externalSource
@@ -1029,19 +1035,26 @@ func resourceIBMSchematicsActionMapToTargetResourceset(targetResourcesetMap map[
 		targetResourceset.ID = core.StringPtr(targetResourcesetMap["id"].(string))
 	}
 	if targetResourcesetMap["created_at"] != nil {
-	
+		createdAt, err := strfmt.ParseDateTime(targetResourcesetMap["created_at"].(string))
+		if err != nil {
+			targetResourceset.CreatedAt = &createdAt
+		}
 	}
 	if targetResourcesetMap["created_by"] != nil {
 		targetResourceset.CreatedBy = core.StringPtr(targetResourcesetMap["created_by"].(string))
 	}
 	if targetResourcesetMap["updated_at"] != nil {
-	
+		updatedAt, err := strfmt.ParseDateTime(targetResourcesetMap["updated_at"].(string))
+		if err != nil {
+			targetResourceset.CreatedAt = &updatedAt
+		}
 	}
 	if targetResourcesetMap["updated_by"] != nil {
 		targetResourceset.UpdatedBy = core.StringPtr(targetResourcesetMap["updated_by"].(string))
 	}
-	if targetResourcesetMap["sys_lock"] != nil {
-		// TODO: handle SysLock of type SystemLock -- not primitive type, not list
+	if targetResourcesetMap["sys_lock"] != nil && len(targetResourcesetMap["sys_lock"].([]interface{})) != 0 {
+		sysLock := resourceIBMSchematicsActionMapToSystemLock(targetResourcesetMap["sys_lock"].([]interface{})[0].(map[string]interface{}))
+		targetResourceset.SysLock = &sysLock
 	}
 	if targetResourcesetMap["resource_ids"] != nil {
 		resourceIds := []string{}
@@ -1064,7 +1077,10 @@ func resourceIBMSchematicsActionMapToSystemLock(systemLockMap map[string]interfa
 		systemLock.SysLockedBy = core.StringPtr(systemLockMap["sys_locked_by"].(string))
 	}
 	if systemLockMap["sys_locked_at"] != nil {
-	
+		sysLockedAt, err := strfmt.ParseDateTime(systemLockMap["sys_locked_at"].(string))
+		if err != nil {
+			systemLock.SysLockedAt = &sysLockedAt
+		}
 	}
 
 	return systemLock
@@ -1080,7 +1096,8 @@ func resourceIBMSchematicsActionMapToVariableData(variableDataMap map[string]int
 		variableData.Value = core.StringPtr(variableDataMap["value"].(string))
 	}
 	if variableDataMap["metadata"] != nil {
-		// TODO: handle Metadata of type VariableMetadata -- not primitive type, not list
+		variableMetaData := resourceIBMSchematicsJobMapToVariableMetadata(variableDataMap["metadata"].([]interface{})[0].(map[string]interface{}))
+		variableData.Metadata = &variableMetaData
 	}
 	if variableDataMap["link"] != nil {
 		variableData.Link = core.StringPtr(variableDataMap["link"].(string))
@@ -1210,10 +1227,12 @@ func resourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{}) e
 	if err = d.Set("source_readme_url", action.SourceReadmeURL); err != nil {
 		return fmt.Errorf("Error reading source_readme_url: %s", err)
 	}
-	if action.Source != nil {
-		sourceMap := resourceIBMSchematicsActionExternalSourceToMap(*action.Source)
-		if err = d.Set("source", []map[string]interface{}{sourceMap}); err != nil {
-			return fmt.Errorf("Error reading source: %s", err)
+	if _, ok := d.GetOk("source"); ok {
+		if action.Source != nil {
+			sourceMap := resourceIBMSchematicsActionExternalSourceToMap(*action.Source)
+			if err = d.Set("source", []map[string]interface{}{sourceMap}); err != nil {
+				return fmt.Errorf("Error reading source: %s", err)
+			}
 		}
 	}
 	if err = d.Set("source_type", action.SourceType); err != nil {
@@ -1222,10 +1241,12 @@ func resourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{}) e
 	if err = d.Set("command_parameter", action.CommandParameter); err != nil {
 		return fmt.Errorf("Error reading command_parameter: %s", err)
 	}
-	if action.Bastion != nil {
-		bastionMap := resourceIBMSchematicsActionTargetResourcesetToMap(*action.Bastion)
-		if err = d.Set("bastion", []map[string]interface{}{bastionMap}); err != nil {
-			return fmt.Errorf("Error reading bastion: %s", err)
+	if _, ok := d.GetOk("bastion"); ok {
+		if action.Bastion != nil {
+			bastionMap := resourceIBMSchematicsActionTargetResourcesetToMap(*action.Bastion)
+			if err = d.Set("bastion", []map[string]interface{}{bastionMap}); err != nil {
+				return fmt.Errorf("Error reading bastion: %s", err)
+			}
 		}
 	}
 	if err = d.Set("targets_ini", action.TargetsIni); err != nil {
@@ -1289,32 +1310,40 @@ func resourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{}) e
 	if err = d.Set("x_github_token", action.XGithubToken); err != nil {
 		return fmt.Errorf("Error reading x_github_token: %s", err)
 	}
-	if err = d.Set("crn", action.CRN); err != nil {
+	if err = d.Set("crn", action.Crn); err != nil {
 		return fmt.Errorf("Error reading crn: %s", err)
 	}
 	if err = d.Set("account", action.Account); err != nil {
 		return fmt.Errorf("Error reading account: %s", err)
 	}
-	if err = d.Set("source_created_at", action.SourceCreatedAt); err != nil {
-		return fmt.Errorf("Error reading source_created_at: %s", err)
+	if action.SourceCreatedAt != nil {
+		if err = d.Set("source_created_at", action.SourceCreatedAt.String()); err != nil {
+			return fmt.Errorf("Error reading source_created_at: %s", err)
+		}
 	}
 	if err = d.Set("source_created_by", action.SourceCreatedBy); err != nil {
 		return fmt.Errorf("Error reading source_created_by: %s", err)
 	}
-	if err = d.Set("source_updated_at", action.SourceUpdatedAt); err != nil {
-		return fmt.Errorf("Error reading source_updated_at: %s", err)
+	if action.SourceUpdatedAt != nil {
+		if err = d.Set("source_updated_at", action.SourceUpdatedAt.String()); err != nil {
+			return fmt.Errorf("Error reading source_updated_at: %s", err)
+		}
 	}
 	if err = d.Set("source_updated_by", action.SourceUpdatedBy); err != nil {
 		return fmt.Errorf("Error reading source_updated_by: %s", err)
 	}
-	if err = d.Set("created_at", action.CreatedAt); err != nil {
-		return fmt.Errorf("Error reading created_at: %s", err)
+	if action.CreatedAt != nil {
+		if err = d.Set("created_at", action.CreatedAt.String()); err != nil {
+			return fmt.Errorf("Error reading created_at: %s", err)
+		}
 	}
 	if err = d.Set("created_by", action.CreatedBy); err != nil {
 		return fmt.Errorf("Error reading created_by: %s", err)
 	}
-	if err = d.Set("updated_at", action.UpdatedAt); err != nil {
-		return fmt.Errorf("Error reading updated_at: %s", err)
+	if action.UpdatedAt != nil {
+		if err = d.Set("updated_at", action.UpdatedAt.String()); err != nil {
+			return fmt.Errorf("Error reading updated_at: %s", err)
+		}
 	}
 	if err = d.Set("updated_by", action.UpdatedBy); err != nil {
 		return fmt.Errorf("Error reading updated_by: %s", err)
@@ -1322,9 +1351,11 @@ func resourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{}) e
 	if err = d.Set("namespace", action.Namespace); err != nil {
 		return fmt.Errorf("Error reading namespace: %s", err)
 	}
-	if action.PlaybookNames != nil {
-		if err = d.Set("playbook_names", action.PlaybookNames); err != nil {
-			return fmt.Errorf("Error reading playbook_names: %s", err)
+	if _, ok := d.GetOk("playbook_names"); ok {
+		if action.PlaybookNames != nil {
+			if err = d.Set("playbook_names", action.PlaybookNames); err != nil {
+				return fmt.Errorf("Error reading playbook_names: %s", err)
+			}
 		}
 	}
 
@@ -1336,7 +1367,7 @@ func resourceIBMSchematicsActionUserStateToMap(userState schematicsv1.UserState)
 
 	userStateMap["state"] = userState.State
 	userStateMap["set_by"] = userState.SetBy
-	userStateMap["set_at"] = userState.SetAt
+	userStateMap["set_at"] = userState.SetAt.String()
 
 	return userStateMap
 }
@@ -1346,8 +1377,8 @@ func resourceIBMSchematicsActionExternalSourceToMap(externalSource schematicsv1.
 
 	externalSourceMap["source_type"] = externalSource.SourceType
 	if externalSource.Git != nil {
-		GitMap := resourceIBMSchematicsActionExternalSourceGitToMap(*externalSource.Git
-		externalSourceMap["git"] = []map[string]interface{}{GitMap})
+		GitMap := resourceIBMSchematicsActionExternalSourceGitToMap(*externalSource.Git)
+		externalSourceMap["git"] = []map[string]interface{}{GitMap}
 	}
 
 	return externalSourceMap
@@ -1374,13 +1405,13 @@ func resourceIBMSchematicsActionTargetResourcesetToMap(targetResourceset schemat
 	targetResourcesetMap["resource_query"] = targetResourceset.ResourceQuery
 	targetResourcesetMap["credential_ref"] = targetResourceset.CredentialRef
 	targetResourcesetMap["id"] = targetResourceset.ID
-	targetResourcesetMap["created_at"] = targetResourceset.CreatedAt
+	targetResourcesetMap["created_at"] = targetResourceset.CreatedAt.String()
 	targetResourcesetMap["created_by"] = targetResourceset.CreatedBy
-	targetResourcesetMap["updated_at"] = targetResourceset.UpdatedAt
+	targetResourcesetMap["updated_at"] = targetResourceset.UpdatedAt.String()
 	targetResourcesetMap["updated_by"] = targetResourceset.UpdatedBy
 	if targetResourceset.SysLock != nil {
-		SysLockMap := resourceIBMSchematicsActionSystemLockToMap(*targetResourceset.SysLock
-		targetResourcesetMap["sys_lock"] = []map[string]interface{}{SysLockMap})
+		SysLockMap := resourceIBMSchematicsActionSystemLockToMap(*targetResourceset.SysLock)
+		targetResourcesetMap["sys_lock"] = []map[string]interface{}{SysLockMap}
 	}
 	if targetResourceset.ResourceIds != nil {
 		targetResourcesetMap["resource_ids"] = targetResourceset.ResourceIds
@@ -1394,7 +1425,7 @@ func resourceIBMSchematicsActionSystemLockToMap(systemLock schematicsv1.SystemLo
 
 	systemLockMap["sys_locked"] = systemLock.SysLocked
 	systemLockMap["sys_locked_by"] = systemLock.SysLockedBy
-	systemLockMap["sys_locked_at"] = systemLock.SysLockedAt
+	systemLockMap["sys_locked_at"] = systemLock.SysLockedAt.String()
 
 	return systemLockMap
 }
@@ -1405,8 +1436,8 @@ func resourceIBMSchematicsActionVariableDataToMap(variableData schematicsv1.Vari
 	variableDataMap["name"] = variableData.Name
 	variableDataMap["value"] = variableData.Value
 	if variableData.Metadata != nil {
-		MetadataMap := resourceIBMSchematicsActionVariableMetadataToMap(*variableData.Metadata
-		variableDataMap["metadata"] = []map[string]interface{}{MetadataMap})
+		MetadataMap := resourceIBMSchematicsActionVariableMetadataToMap(*variableData.Metadata)
+		variableDataMap["metadata"] = []map[string]interface{}{MetadataMap}
 	}
 	variableDataMap["link"] = variableData.Link
 
@@ -1479,7 +1510,7 @@ func resourceIBMSchematicsActionUpdate(d *schema.ResourceData, meta interface{})
 		hasChange = true
 	}
 	if d.HasChange("tags") {
-		// TODO: handle Tags of type TypeList -- not primitive, not model
+		updateActionOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 		hasChange = true
 	}
 	if d.HasChange("user_state") {
@@ -1514,19 +1545,43 @@ func resourceIBMSchematicsActionUpdate(d *schema.ResourceData, meta interface{})
 		hasChange = true
 	}
 	if d.HasChange("credentials") {
-		// TODO: handle Credentials of type TypeList -- not primitive, not model
+		var credentials []schematicsv1.VariableData
+		for _, e := range d.Get("credentials").([]interface{}) {
+			value := e.(map[string]interface{})
+			credentialsItem := resourceIBMSchematicsActionMapToVariableData(value)
+			credentials = append(credentials, credentialsItem)
+		}
+		updateActionOptions.SetCredentials(credentials)
 		hasChange = true
 	}
 	if d.HasChange("inputs") {
-		// TODO: handle Inputs of type TypeList -- not primitive, not model
+		var inputs []schematicsv1.VariableData
+		for _, e := range d.Get("inputs").([]interface{}) {
+			value := e.(map[string]interface{})
+			inputsItem := resourceIBMSchematicsActionMapToVariableData(value)
+			inputs = append(inputs, inputsItem)
+		}
+		updateActionOptions.SetInputs(inputs)
 		hasChange = true
 	}
 	if d.HasChange("outputs") {
-		// TODO: handle Outputs of type TypeList -- not primitive, not model
+		var outputs []schematicsv1.VariableData
+		for _, e := range d.Get("outputs").([]interface{}) {
+			value := e.(map[string]interface{})
+			outputsItem := resourceIBMSchematicsActionMapToVariableData(value)
+			outputs = append(outputs, outputsItem)
+		}
+		updateActionOptions.SetOutputs(outputs)
 		hasChange = true
 	}
 	if d.HasChange("settings") {
-		// TODO: handle Settings of type TypeList -- not primitive, not model
+		var settings []schematicsv1.VariableData
+		for _, e := range d.Get("settings").([]interface{}) {
+			value := e.(map[string]interface{})
+			settingsItem := resourceIBMSchematicsActionMapToVariableData(value)
+			settings = append(settings, settingsItem)
+		}
+		updateActionOptions.SetSettings(settings)
 		hasChange = true
 	}
 	if d.HasChange("trigger_record_id") {

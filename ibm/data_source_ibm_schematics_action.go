@@ -18,9 +18,10 @@ package ibm
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"log"
 )
 
 func dataSourceIBMSchematicsAction() *schema.Resource {
@@ -856,7 +857,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 	}
 }
 
-
 func dataSourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{}) error {
 	schematicsClient, err := meta.(ClientSession).SchematicsV1()
 	if err != nil {
@@ -864,7 +864,6 @@ func dataSourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{})
 	}
 
 	getActionOptions := &schematicsv1.GetActionOptions{}
-
 
 	getActionOptions.SetActionID(d.Get("action_id").(string))
 
@@ -935,7 +934,6 @@ func dataSourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{})
 		}
 	}
 
-
 	if action.Inputs != nil {
 		err = d.Set("inputs", dataSourceActionFlattenInputs(action.Inputs))
 		if err != nil {
@@ -943,14 +941,12 @@ func dataSourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{})
 		}
 	}
 
-
 	if action.Outputs != nil {
 		err = d.Set("outputs", dataSourceActionFlattenOutputs(action.Outputs))
 		if err != nil {
 			return fmt.Errorf("Error setting outputs %s", err)
 		}
 	}
-
 
 	if action.Settings != nil {
 		err = d.Set("settings", dataSourceActionFlattenSettings(action.Settings))
@@ -962,32 +958,40 @@ func dataSourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{})
 	if err = d.Set("trigger_record_id", action.TriggerRecordID); err != nil {
 		return fmt.Errorf("Error setting trigger_record_id: %s", err)
 	}
-	if err = d.Set("crn", action.CRN); err != nil {
+	if err = d.Set("crn", action.Crn); err != nil {
 		return fmt.Errorf("Error setting crn: %s", err)
 	}
 	if err = d.Set("account", action.Account); err != nil {
 		return fmt.Errorf("Error setting account: %s", err)
 	}
-	if err = d.Set("source_created_at", action.SourceCreatedAt); err != nil {
-		return fmt.Errorf("Error setting source_created_at: %s", err)
+	if action.SourceCreatedAt != nil {
+		if err = d.Set("source_created_at", action.SourceCreatedAt.String()); err != nil {
+			return fmt.Errorf("Error setting source_created_at: %s", err)
+		}
 	}
 	if err = d.Set("source_created_by", action.SourceCreatedBy); err != nil {
 		return fmt.Errorf("Error setting source_created_by: %s", err)
 	}
-	if err = d.Set("source_updated_at", action.SourceUpdatedAt); err != nil {
-		return fmt.Errorf("Error setting source_updated_at: %s", err)
+	if action.SourceUpdatedAt != nil {
+		if err = d.Set("source_updated_at", action.SourceUpdatedAt.String()); err != nil {
+			return fmt.Errorf("Error setting source_updated_at: %s", err)
+		}
 	}
 	if err = d.Set("source_updated_by", action.SourceUpdatedBy); err != nil {
 		return fmt.Errorf("Error setting source_updated_by: %s", err)
 	}
-	if err = d.Set("created_at", action.CreatedAt); err != nil {
-		return fmt.Errorf("Error setting created_at: %s", err)
+	if action.CreatedAt != nil {
+		if err = d.Set("created_at", action.CreatedAt.String()); err != nil {
+			return fmt.Errorf("Error setting created_at: %s", err)
+		}
 	}
 	if err = d.Set("created_by", action.CreatedBy); err != nil {
 		return fmt.Errorf("Error setting created_by: %s", err)
 	}
-	if err = d.Set("updated_at", action.UpdatedAt); err != nil {
-		return fmt.Errorf("Error setting updated_at: %s", err)
+	if action.UpdatedAt != nil {
+		if err = d.Set("updated_at", action.UpdatedAt.String()); err != nil {
+			return fmt.Errorf("Error setting updated_at: %s", err)
+		}
 	}
 	if err = d.Set("updated_by", action.UpdatedBy); err != nil {
 		return fmt.Errorf("Error setting updated_by: %s", err)
@@ -1002,8 +1006,11 @@ func dataSourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf("Error setting state %s", err)
 		}
 	}
-	if err = d.Set("playbook_names", action.PlaybookNames); err != nil {
-		return fmt.Errorf("Error setting playbook_names: %s", err)
+
+	if action.PlaybookNames != nil {
+		if err = d.Set("playbook_names", action.PlaybookNames); err != nil {
+			return fmt.Errorf("Error setting playbook_names: %s", err)
+		}
 	}
 
 	if action.SysLock != nil {
@@ -1034,12 +1041,11 @@ func dataSourceActionUserStateToMap(userStateItem schematicsv1.UserState) (userS
 		userStateMap["set_by"] = userStateItem.SetBy
 	}
 	if userStateItem.SetAt != nil {
-		userStateMap["set_at"] = userStateItem.SetAt
+		userStateMap["set_at"] = userStateItem.SetAt.String()
 	}
 
 	return userStateMap
 }
-
 
 func dataSourceActionFlattenSource(result schematicsv1.ExternalSource) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
@@ -1087,8 +1093,6 @@ func dataSourceActionSourceGitToMap(gitItem schematicsv1.ExternalSourceGit) (git
 	return gitMap
 }
 
-
-
 func dataSourceActionFlattenBastion(result schematicsv1.TargetResourceset) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceActionBastionToMap(result)
@@ -1119,13 +1123,13 @@ func dataSourceActionBastionToMap(bastionItem schematicsv1.TargetResourceset) (b
 		bastionMap["id"] = bastionItem.ID
 	}
 	if bastionItem.CreatedAt != nil {
-		bastionMap["created_at"] = bastionItem.CreatedAt
+		bastionMap["created_at"] = bastionItem.CreatedAt.String()
 	}
 	if bastionItem.CreatedBy != nil {
 		bastionMap["created_by"] = bastionItem.CreatedBy
 	}
 	if bastionItem.UpdatedAt != nil {
-		bastionMap["updated_at"] = bastionItem.UpdatedAt
+		bastionMap["updated_at"] = bastionItem.UpdatedAt.String()
 	}
 	if bastionItem.UpdatedBy != nil {
 		bastionMap["updated_by"] = bastionItem.UpdatedBy
@@ -1153,13 +1157,11 @@ func dataSourceActionBastionSysLockToMap(sysLockItem schematicsv1.SystemLock) (s
 		sysLockMap["sys_locked_by"] = sysLockItem.SysLockedBy
 	}
 	if sysLockItem.SysLockedAt != nil {
-		sysLockMap["sys_locked_at"] = sysLockItem.SysLockedAt
+		sysLockMap["sys_locked_at"] = sysLockItem.SysLockedAt.String()
 	}
 
 	return sysLockMap
 }
-
-
 
 func dataSourceActionFlattenCredentials(result []schematicsv1.VariableData) (credentials []map[string]interface{}) {
 	for _, credentialsItem := range result {
@@ -1246,8 +1248,6 @@ func dataSourceActionCredentialsMetadataToMap(metadataItem schematicsv1.Variable
 	return metadataMap
 }
 
-
-
 func dataSourceActionFlattenInputs(result []schematicsv1.VariableData) (inputs []map[string]interface{}) {
 	for _, inputsItem := range result {
 		inputs = append(inputs, dataSourceActionInputsToMap(inputsItem))
@@ -1332,8 +1332,6 @@ func dataSourceActionInputsMetadataToMap(metadataItem schematicsv1.VariableMetad
 
 	return metadataMap
 }
-
-
 
 func dataSourceActionFlattenOutputs(result []schematicsv1.VariableData) (outputs []map[string]interface{}) {
 	for _, outputsItem := range result {
@@ -1420,8 +1418,6 @@ func dataSourceActionOutputsMetadataToMap(metadataItem schematicsv1.VariableMeta
 	return metadataMap
 }
 
-
-
 func dataSourceActionFlattenSettings(result []schematicsv1.VariableData) (settings []map[string]interface{}) {
 	for _, settingsItem := range result {
 		settings = append(settings, dataSourceActionSettingsToMap(settingsItem))
@@ -1507,8 +1503,6 @@ func dataSourceActionSettingsMetadataToMap(metadataItem schematicsv1.VariableMet
 	return metadataMap
 }
 
-
-
 func dataSourceActionFlattenState(result schematicsv1.ActionState) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceActionStateToMap(result)
@@ -1533,7 +1527,6 @@ func dataSourceActionStateToMap(stateItem schematicsv1.ActionState) (stateMap ma
 	return stateMap
 }
 
-
 func dataSourceActionFlattenSysLock(result schematicsv1.SystemLock) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceActionSysLockToMap(result)
@@ -1552,10 +1545,8 @@ func dataSourceActionSysLockToMap(sysLockItem schematicsv1.SystemLock) (sysLockM
 		sysLockMap["sys_locked_by"] = sysLockItem.SysLockedBy
 	}
 	if sysLockItem.SysLockedAt != nil {
-		sysLockMap["sys_locked_at"] = sysLockItem.SysLockedAt
+		sysLockMap["sys_locked_at"] = sysLockItem.SysLockedAt.String()
 	}
 
 	return sysLockMap
 }
-
-

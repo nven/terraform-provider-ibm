@@ -18,9 +18,10 @@ package ibm
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"log"
 )
 
 func dataSourceIBMSchematicsWorkspace() *schema.Resource {
@@ -489,7 +490,6 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 	}
 }
 
-
 func dataSourceIBMSchematicsWorkspaceRead(d *schema.ResourceData, meta interface{}) error {
 	schematicsClient, err := meta.(ClientSession).SchematicsV1()
 	if err != nil {
@@ -497,7 +497,6 @@ func dataSourceIBMSchematicsWorkspaceRead(d *schema.ResourceData, meta interface
 	}
 
 	getWorkspaceOptions := &schematicsv1.GetWorkspaceOptions{}
-
 
 	getWorkspaceOptions.SetWID(d.Get("w_id").(string))
 
@@ -518,19 +517,19 @@ func dataSourceIBMSchematicsWorkspaceRead(d *schema.ResourceData, meta interface
 			return fmt.Errorf("Error setting catalog_ref %s", err)
 		}
 	}
-	if err = d.Set("created_at", workspaceResponse.CreatedAt); err != nil {
+	if err = d.Set("created_at", workspaceResponse.CreatedAt.String()); err != nil {
 		return fmt.Errorf("Error setting created_at: %s", err)
 	}
 	if err = d.Set("created_by", workspaceResponse.CreatedBy); err != nil {
 		return fmt.Errorf("Error setting created_by: %s", err)
 	}
-	if err = d.Set("crn", workspaceResponse.CRN); err != nil {
+	if err = d.Set("crn", workspaceResponse.Crn); err != nil {
 		return fmt.Errorf("Error setting crn: %s", err)
 	}
 	if err = d.Set("description", workspaceResponse.Description); err != nil {
 		return fmt.Errorf("Error setting description: %s", err)
 	}
-	if err = d.Set("last_health_check_at", workspaceResponse.LastHealthCheckAt); err != nil {
+	if err = d.Set("last_health_check_at", workspaceResponse.LastHealthCheckAt.String()); err != nil {
 		return fmt.Errorf("Error setting last_health_check_at: %s", err)
 	}
 	if err = d.Set("location", workspaceResponse.Location); err != nil {
@@ -549,7 +548,6 @@ func dataSourceIBMSchematicsWorkspaceRead(d *schema.ResourceData, meta interface
 			return fmt.Errorf("Error setting runtime_data %s", err)
 		}
 	}
-
 
 	if workspaceResponse.SharedData != nil {
 		err = d.Set("shared_data", dataSourceWorkspaceResponseFlattenSharedData(*workspaceResponse.SharedData))
@@ -584,7 +582,7 @@ func dataSourceIBMSchematicsWorkspaceRead(d *schema.ResourceData, meta interface
 	if err = d.Set("type", workspaceResponse.Type); err != nil {
 		return fmt.Errorf("Error setting type: %s", err)
 	}
-	if err = d.Set("updated_at", workspaceResponse.UpdatedAt); err != nil {
+	if err = d.Set("updated_at", workspaceResponse.UpdatedAt.String()); err != nil {
 		return fmt.Errorf("Error setting updated_at: %s", err)
 	}
 	if err = d.Set("updated_by", workspaceResponse.UpdatedBy); err != nil {
@@ -647,7 +645,6 @@ func dataSourceWorkspaceResponseCatalogRefToMap(catalogRefItem schematicsv1.Cata
 	return catalogRefMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenRuntimeData(result []schematicsv1.TemplateRunTimeDataResponse) (runtimeData []map[string]interface{}) {
 	for _, runtimeDataItem := range result {
 		runtimeData = append(runtimeData, dataSourceWorkspaceResponseRuntimeDataToMap(runtimeDataItem))
@@ -687,7 +684,6 @@ func dataSourceWorkspaceResponseRuntimeDataToMap(runtimeDataItem schematicsv1.Te
 	return runtimeDataMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenSharedData(result schematicsv1.SharedTargetDataResponse) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceWorkspaceResponseSharedDataToMap(result)
@@ -721,7 +717,6 @@ func dataSourceWorkspaceResponseSharedDataToMap(sharedDataItem schematicsv1.Shar
 	return sharedDataMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenTemplateData(result []schematicsv1.TemplateSourceDataResponse) (templateData []map[string]interface{}) {
 	for _, templateDataItem := range result {
 		templateData = append(templateData, dataSourceWorkspaceResponseTemplateDataToMap(templateDataItem))
@@ -733,7 +728,6 @@ func dataSourceWorkspaceResponseFlattenTemplateData(result []schematicsv1.Templa
 func dataSourceWorkspaceResponseTemplateDataToMap(templateDataItem schematicsv1.TemplateSourceDataResponse) (templateDataMap map[string]interface{}) {
 	templateDataMap = map[string]interface{}{}
 
-	
 	if templateDataItem.EnvValues != nil {
 		envValuesList := []map[string]interface{}{}
 		for _, envValuesItem := range templateDataItem.EnvValues {
@@ -795,7 +789,6 @@ func dataSourceWorkspaceResponseTemplateDataEnvValuesToMap(envValuesItem schemat
 	return envValuesMap
 }
 
-
 func dataSourceWorkspaceResponseTemplateDataVariablestoreToMap(variablestoreItem schematicsv1.WorkspaceVariableResponse) (variablestoreMap map[string]interface{}) {
 	variablestoreMap = map[string]interface{}{}
 
@@ -817,8 +810,6 @@ func dataSourceWorkspaceResponseTemplateDataVariablestoreToMap(variablestoreItem
 
 	return variablestoreMap
 }
-
-
 
 func dataSourceWorkspaceResponseFlattenTemplateRepo(result schematicsv1.TemplateRepoResponse) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
@@ -856,7 +847,6 @@ func dataSourceWorkspaceResponseTemplateRepoToMap(templateRepoItem schematicsv1.
 	return templateRepoMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenWorkspaceStatus(result schematicsv1.WorkspaceStatusResponse) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceWorkspaceResponseWorkspaceStatusToMap(result)
@@ -890,7 +880,6 @@ func dataSourceWorkspaceResponseWorkspaceStatusToMap(workspaceStatusItem schemat
 	return workspaceStatusMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenWorkspaceStatusMsg(result schematicsv1.WorkspaceStatusMessage) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceWorkspaceResponseWorkspaceStatusMsgToMap(result)
@@ -911,5 +900,3 @@ func dataSourceWorkspaceResponseWorkspaceStatusMsgToMap(workspaceStatusMsgItem s
 
 	return workspaceStatusMsgMap
 }
-
-

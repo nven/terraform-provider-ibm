@@ -18,10 +18,12 @@ package ibm
 
 import (
 	"fmt"
-	"github.com/IBM/go-sdk-core/v4/core"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
-	"null"
+
+	"github.com/IBM/go-sdk-core/v4/core"
+	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
+	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceIBMSchematicsJob() *schema.Resource {
@@ -1117,7 +1119,7 @@ func resourceIBMSchematicsJobCreate(d *schema.ResourceData, meta interface{}) er
 		createJobOptions.SetCommandParameter(d.Get("command_parameter").(string))
 	}
 	if _, ok := d.GetOk("command_options"); ok {
-		createJobOptions.SetCommandOptions(d.Get("command_options"))
+		createJobOptions.SetCommandOptions(d.Get("command_options").([]string))
 	}
 	if _, ok := d.GetOk("inputs"); ok {
 		var inputs []schematicsv1.VariableData
@@ -1138,7 +1140,7 @@ func resourceIBMSchematicsJobCreate(d *schema.ResourceData, meta interface{}) er
 		createJobOptions.SetSettings(settings)
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		createJobOptions.SetTags(d.Get("tags"))
+		createJobOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("location"); ok {
 		createJobOptions.SetLocation(d.Get("location").(string))
@@ -1181,7 +1183,8 @@ func resourceIBMSchematicsJobMapToVariableData(variableDataMap map[string]interf
 		variableData.Value = core.StringPtr(variableDataMap["value"].(string))
 	}
 	if variableDataMap["metadata"] != nil {
-		// TODO: handle Metadata of type VariableMetadata -- not primitive type, not list
+		variableMetaData := resourceIBMSchematicsJobMapToVariableMetadata(variableDataMap["metadata"].(map[string]interface{}))
+		variableData.Metadata = &variableMetaData
 	}
 	if variableDataMap["link"] != nil {
 		variableData.Link = core.StringPtr(variableDataMap["link"].(string))
@@ -1257,7 +1260,8 @@ func resourceIBMSchematicsJobMapToJobStatus(jobStatusMap map[string]interface{})
 	jobStatus := schematicsv1.JobStatus{}
 
 	if jobStatusMap["action_job_status"] != nil {
-		// TODO: handle ActionJobStatus of type JobStatusAction -- not primitive type, not list
+		actionJobStatus := resourceIBMSchematicsJobMapToJobStatusAction(jobStatusMap["action_job_status"].([]interface{})[0].(map[string]interface{}))
+		jobStatus.ActionJobStatus = &actionJobStatus
 	}
 
 	return jobStatus
@@ -1288,7 +1292,10 @@ func resourceIBMSchematicsJobMapToJobStatusAction(jobStatusActionMap map[string]
 		jobStatusAction.TargetsStatusMessage = core.StringPtr(jobStatusActionMap["targets_status_message"].(string))
 	}
 	if jobStatusActionMap["updated_at"] != nil {
-	
+		updatedAt, err := strfmt.ParseDateTime(jobStatusActionMap["updated_at"].(string))
+		if err != nil {
+			jobStatusAction.UpdatedAt = &updatedAt
+		}
 	}
 
 	return jobStatusAction
@@ -1299,7 +1306,8 @@ func resourceIBMSchematicsJobMapToJobData(jobDataMap map[string]interface{}) sch
 
 	jobData.JobType = core.StringPtr(jobDataMap["job_type"].(string))
 	if jobDataMap["action_job_data"] != nil {
-		// TODO: handle ActionJobData of type JobDataAction -- not primitive type, not list
+		actionJobData := resourceIBMSchematicsJobMapToJobDataAction(jobDataMap["action_job_data"].([]interface{})[0].(map[string]interface{}))
+		jobData.ActionJobData = &actionJobData
 	}
 
 	return jobData
@@ -1312,31 +1320,31 @@ func resourceIBMSchematicsJobMapToJobDataAction(jobDataActionMap map[string]inte
 		jobDataAction.ActionName = core.StringPtr(jobDataActionMap["action_name"].(string))
 	}
 	if jobDataActionMap["inputs"] != nil {
-		inputs := []VariableData{}
+		inputs := []schematicsv1.VariableData{}
 		for _, inputsItem := range jobDataActionMap["inputs"].([]interface{}) {
-			inputsItemModel := resourceIBMSchematicsJobMapToVariableData(inputsItem)
+			inputsItemModel := resourceIBMSchematicsJobMapToVariableData(inputsItem.(map[string]interface{}))
 			inputs = append(inputs, inputsItemModel)
 		}
 		jobDataAction.Inputs = inputs
 	}
 	if jobDataActionMap["outputs"] != nil {
-		outputs := []VariableData{}
+		outputs := []schematicsv1.VariableData{}
 		for _, outputsItem := range jobDataActionMap["outputs"].([]interface{}) {
-			outputsItemModel := resourceIBMSchematicsJobMapToVariableData(outputsItem)
+			outputsItemModel := resourceIBMSchematicsJobMapToVariableData(outputsItem.(map[string]interface{}))
 			outputs = append(outputs, outputsItemModel)
 		}
 		jobDataAction.Outputs = outputs
 	}
 	if jobDataActionMap["settings"] != nil {
-		settings := []VariableData{}
+		settings := []schematicsv1.VariableData{}
 		for _, settingsItem := range jobDataActionMap["settings"].([]interface{}) {
-			settingsItemModel := resourceIBMSchematicsJobMapToVariableData(settingsItem)
+			settingsItemModel := resourceIBMSchematicsJobMapToVariableData(settingsItem.(map[string]interface{}))
 			settings = append(settings, settingsItemModel)
 		}
 		jobDataAction.Settings = settings
 	}
 	if jobDataActionMap["updated_at"] != nil {
-	
+
 	}
 
 	return jobDataAction
@@ -1364,19 +1372,20 @@ func resourceIBMSchematicsJobMapToTargetResourceset(targetResourcesetMap map[str
 		targetResourceset.ID = core.StringPtr(targetResourcesetMap["id"].(string))
 	}
 	if targetResourcesetMap["created_at"] != nil {
-	
+
 	}
 	if targetResourcesetMap["created_by"] != nil {
 		targetResourceset.CreatedBy = core.StringPtr(targetResourcesetMap["created_by"].(string))
 	}
 	if targetResourcesetMap["updated_at"] != nil {
-	
+
 	}
 	if targetResourcesetMap["updated_by"] != nil {
 		targetResourceset.UpdatedBy = core.StringPtr(targetResourcesetMap["updated_by"].(string))
 	}
 	if targetResourcesetMap["sys_lock"] != nil {
-		// TODO: handle SysLock of type SystemLock -- not primitive type, not list
+		sysLock := resourceIBMSchematicsJobMapToSystemLock(targetResourcesetMap["sys_lock"].(map[string]interface{}))
+		targetResourceset.SysLock = &sysLock
 	}
 	if targetResourcesetMap["resource_ids"] != nil {
 		resourceIds := []string{}
@@ -1399,7 +1408,7 @@ func resourceIBMSchematicsJobMapToSystemLock(systemLockMap map[string]interface{
 		systemLock.SysLockedBy = core.StringPtr(systemLockMap["sys_locked_by"].(string))
 	}
 	if systemLockMap["sys_locked_at"] != nil {
-	
+
 	}
 
 	return systemLock
@@ -1415,27 +1424,29 @@ func resourceIBMSchematicsJobMapToJobLogSummary(jobLogSummaryMap map[string]inte
 		jobLogSummary.JobType = core.StringPtr(jobLogSummaryMap["job_type"].(string))
 	}
 	if jobLogSummaryMap["log_start_at"] != nil {
-	
+
 	}
 	if jobLogSummaryMap["log_analyzed_till"] != nil {
-	
+
 	}
 	if jobLogSummaryMap["elapsed_time"] != nil {
 		jobLogSummary.ElapsedTime = core.Float64Ptr(jobLogSummaryMap["elapsed_time"].(float64))
 	}
 	if jobLogSummaryMap["log_errors"] != nil {
-		logErrors := []JobLogSummaryLogErrorsItem{}
+		logErrors := []schematicsv1.JobLogSummaryLogErrorsItem{}
 		for _, logErrorsItem := range jobLogSummaryMap["log_errors"].([]interface{}) {
-			logErrorsItemModel := resourceIBMSchematicsJobMapToJobLogSummaryLogErrorsItem(logErrorsItem)
+			logErrorsItemModel := resourceIBMSchematicsJobMapToJobLogSummaryLogErrorsItem(logErrorsItem.(map[string]interface{}))
 			logErrors = append(logErrors, logErrorsItemModel)
 		}
 		jobLogSummary.LogErrors = logErrors
 	}
 	if jobLogSummaryMap["repo_download_job"] != nil {
-		// TODO: handle RepoDownloadJob of type JobLogSummaryRepoDownloadJob -- not primitive type, not list
+		repoDownloadJob := resourceIBMSchematicsJobMapToJobLogSummaryRepoDownloadJob(jobLogSummaryMap["repo_download_job"].([]interface{})[0].(map[string]interface{}))
+		jobLogSummary.RepoDownloadJob = &repoDownloadJob
 	}
 	if jobLogSummaryMap["action_job"] != nil {
-		// TODO: handle ActionJob of type JobLogSummaryActionJob -- not primitive type, not list
+		actionJob := resourceIBMSchematicsJobMapToJobLogSummaryActionJob(jobLogSummaryMap["action_job"].([]interface{})[0].(map[string]interface{}))
+		jobLogSummary.ActionJob = &actionJob
 	}
 
 	return jobLogSummary
@@ -1492,7 +1503,8 @@ func resourceIBMSchematicsJobMapToJobLogSummaryActionJob(jobLogSummaryActionJobM
 		jobLogSummaryActionJob.PlayCount = core.Float64Ptr(jobLogSummaryActionJobMap["play_count"].(float64))
 	}
 	if jobLogSummaryActionJobMap["recap"] != nil {
-		// TODO: handle Recap of type JobLogSummaryActionJobRecap -- not primitive type, not list
+		recap := resourceIBMSchematicsJobMapToJobLogSummaryActionJobRecap(jobLogSummaryActionJobMap["recap"].([]interface{})[0].(map[string]interface{}))
+		jobLogSummaryActionJob.Recap = &recap
 	}
 
 	return jobLogSummaryActionJob
@@ -1624,16 +1636,16 @@ func resourceIBMSchematicsJobRead(d *schema.ResourceData, meta interface{}) erro
 	if err = d.Set("resource_group", job.ResourceGroup); err != nil {
 		return fmt.Errorf("Error reading resource_group: %s", err)
 	}
-	if err = d.Set("submitted_at", job.SubmittedAt); err != nil {
+	if err = d.Set("submitted_at", job.SubmittedAt.String()); err != nil {
 		return fmt.Errorf("Error reading submitted_at: %s", err)
 	}
 	if err = d.Set("submitted_by", job.SubmittedBy); err != nil {
 		return fmt.Errorf("Error reading submitted_by: %s", err)
 	}
-	if err = d.Set("start_at", job.StartAt); err != nil {
+	if err = d.Set("start_at", job.StartAt.String()); err != nil {
 		return fmt.Errorf("Error reading start_at: %s", err)
 	}
-	if err = d.Set("end_at", job.EndAt); err != nil {
+	if err = d.Set("end_at", job.EndAt.String()); err != nil {
 		return fmt.Errorf("Error reading end_at: %s", err)
 	}
 	if err = d.Set("duration", job.Duration); err != nil {
@@ -1651,7 +1663,7 @@ func resourceIBMSchematicsJobRead(d *schema.ResourceData, meta interface{}) erro
 	if err = d.Set("results_url", job.ResultsURL); err != nil {
 		return fmt.Errorf("Error reading results_url: %s", err)
 	}
-	if err = d.Set("updated_at", job.UpdatedAt); err != nil {
+	if err = d.Set("updated_at", job.UpdatedAt.String()); err != nil {
 		return fmt.Errorf("Error reading updated_at: %s", err)
 	}
 
@@ -1664,8 +1676,8 @@ func resourceIBMSchematicsJobVariableDataToMap(variableData schematicsv1.Variabl
 	variableDataMap["name"] = variableData.Name
 	variableDataMap["value"] = variableData.Value
 	if variableData.Metadata != nil {
-		MetadataMap := resourceIBMSchematicsJobVariableMetadataToMap(*variableData.Metadata
-		variableDataMap["metadata"] = []map[string]interface{}{MetadataMap})
+		MetadataMap := resourceIBMSchematicsJobVariableMetadataToMap(*variableData.Metadata)
+		variableDataMap["metadata"] = []map[string]interface{}{MetadataMap}
 	}
 	variableDataMap["link"] = variableData.Link
 
@@ -1703,8 +1715,8 @@ func resourceIBMSchematicsJobJobStatusToMap(jobStatus schematicsv1.JobStatus) ma
 	jobStatusMap := map[string]interface{}{}
 
 	if jobStatus.ActionJobStatus != nil {
-		ActionJobStatusMap := resourceIBMSchematicsJobJobStatusActionToMap(*jobStatus.ActionJobStatus
-		jobStatusMap["action_job_status"] = []map[string]interface{}{ActionJobStatusMap})
+		ActionJobStatusMap := resourceIBMSchematicsJobJobStatusActionToMap(*jobStatus.ActionJobStatus)
+		jobStatusMap["action_job_status"] = []map[string]interface{}{ActionJobStatusMap}
 	}
 
 	return jobStatusMap
@@ -1720,7 +1732,7 @@ func resourceIBMSchematicsJobJobStatusActionToMap(jobStatusAction schematicsv1.J
 	jobStatusActionMap["bastion_status_message"] = jobStatusAction.BastionStatusMessage
 	jobStatusActionMap["targets_status_code"] = jobStatusAction.TargetsStatusCode
 	jobStatusActionMap["targets_status_message"] = jobStatusAction.TargetsStatusMessage
-	jobStatusActionMap["updated_at"] = jobStatusAction.UpdatedAt
+	jobStatusActionMap["updated_at"] = jobStatusAction.UpdatedAt.String()
 
 	return jobStatusActionMap
 }
@@ -1730,8 +1742,8 @@ func resourceIBMSchematicsJobJobDataToMap(jobData schematicsv1.JobData) map[stri
 
 	jobDataMap["job_type"] = jobData.JobType
 	if jobData.ActionJobData != nil {
-		ActionJobDataMap := resourceIBMSchematicsJobJobDataActionToMap(*jobData.ActionJobData
-		jobDataMap["action_job_data"] = []map[string]interface{}{ActionJobDataMap})
+		ActionJobDataMap := resourceIBMSchematicsJobJobDataActionToMap(*jobData.ActionJobData)
+		jobDataMap["action_job_data"] = []map[string]interface{}{ActionJobDataMap}
 	}
 
 	return jobDataMap
@@ -1768,7 +1780,7 @@ func resourceIBMSchematicsJobJobDataActionToMap(jobDataAction schematicsv1.JobDa
 		}
 		jobDataActionMap["settings"] = settings
 	}
-	jobDataActionMap["updated_at"] = jobDataAction.UpdatedAt
+	jobDataActionMap["updated_at"] = jobDataAction.UpdatedAt.String()
 
 	return jobDataActionMap
 }
@@ -1782,13 +1794,13 @@ func resourceIBMSchematicsJobTargetResourcesetToMap(targetResourceset schematics
 	targetResourcesetMap["resource_query"] = targetResourceset.ResourceQuery
 	targetResourcesetMap["credential_ref"] = targetResourceset.CredentialRef
 	targetResourcesetMap["id"] = targetResourceset.ID
-	targetResourcesetMap["created_at"] = targetResourceset.CreatedAt
+	targetResourcesetMap["created_at"] = targetResourceset.CreatedAt.String()
 	targetResourcesetMap["created_by"] = targetResourceset.CreatedBy
-	targetResourcesetMap["updated_at"] = targetResourceset.UpdatedAt
+	targetResourcesetMap["updated_at"] = targetResourceset.UpdatedAt.String()
 	targetResourcesetMap["updated_by"] = targetResourceset.UpdatedBy
 	if targetResourceset.SysLock != nil {
-		SysLockMap := resourceIBMSchematicsJobSystemLockToMap(*targetResourceset.SysLock
-		targetResourcesetMap["sys_lock"] = []map[string]interface{}{SysLockMap})
+		SysLockMap := resourceIBMSchematicsJobSystemLockToMap(*targetResourceset.SysLock)
+		targetResourcesetMap["sys_lock"] = []map[string]interface{}{SysLockMap}
 	}
 	if targetResourceset.ResourceIds != nil {
 		targetResourcesetMap["resource_ids"] = targetResourceset.ResourceIds
@@ -1802,7 +1814,7 @@ func resourceIBMSchematicsJobSystemLockToMap(systemLock schematicsv1.SystemLock)
 
 	systemLockMap["sys_locked"] = systemLock.SysLocked
 	systemLockMap["sys_locked_by"] = systemLock.SysLockedBy
-	systemLockMap["sys_locked_at"] = systemLock.SysLockedAt
+	systemLockMap["sys_locked_at"] = systemLock.SysLockedAt.String()
 
 	return systemLockMap
 }
@@ -1812,8 +1824,8 @@ func resourceIBMSchematicsJobJobLogSummaryToMap(jobLogSummary schematicsv1.JobLo
 
 	jobLogSummaryMap["job_id"] = jobLogSummary.JobID
 	jobLogSummaryMap["job_type"] = jobLogSummary.JobType
-	jobLogSummaryMap["log_start_at"] = jobLogSummary.LogStartAt
-	jobLogSummaryMap["log_analyzed_till"] = jobLogSummary.LogAnalyzedTill
+	jobLogSummaryMap["log_start_at"] = jobLogSummary.LogStartAt.String()
+	jobLogSummaryMap["log_analyzed_till"] = jobLogSummary.LogAnalyzedTill.String()
 	jobLogSummaryMap["elapsed_time"] = jobLogSummary.ElapsedTime
 	if jobLogSummary.LogErrors != nil {
 		logErrors := []map[string]interface{}{}
@@ -1825,12 +1837,12 @@ func resourceIBMSchematicsJobJobLogSummaryToMap(jobLogSummary schematicsv1.JobLo
 		jobLogSummaryMap["log_errors"] = logErrors
 	}
 	if jobLogSummary.RepoDownloadJob != nil {
-		RepoDownloadJobMap := resourceIBMSchematicsJobJobLogSummaryRepoDownloadJobToMap(*jobLogSummary.RepoDownloadJob
-		jobLogSummaryMap["repo_download_job"] = []map[string]interface{}{RepoDownloadJobMap})
+		RepoDownloadJobMap := resourceIBMSchematicsJobJobLogSummaryRepoDownloadJobToMap(*jobLogSummary.RepoDownloadJob)
+		jobLogSummaryMap["repo_download_job"] = []map[string]interface{}{RepoDownloadJobMap}
 	}
 	if jobLogSummary.ActionJob != nil {
-		ActionJobMap := resourceIBMSchematicsJobJobLogSummaryActionJobToMap(*jobLogSummary.ActionJob
-		jobLogSummaryMap["action_job"] = []map[string]interface{}{ActionJobMap})
+		ActionJobMap := resourceIBMSchematicsJobJobLogSummaryActionJobToMap(*jobLogSummary.ActionJob)
+		jobLogSummaryMap["action_job"] = []map[string]interface{}{ActionJobMap}
 	}
 
 	return jobLogSummaryMap
@@ -1865,8 +1877,8 @@ func resourceIBMSchematicsJobJobLogSummaryActionJobToMap(jobLogSummaryActionJob 
 	jobLogSummaryActionJobMap["task_count"] = jobLogSummaryActionJob.TaskCount
 	jobLogSummaryActionJobMap["play_count"] = jobLogSummaryActionJob.PlayCount
 	if jobLogSummaryActionJob.Recap != nil {
-		RecapMap := resourceIBMSchematicsJobJobLogSummaryActionJobRecapToMap(*jobLogSummaryActionJob.Recap
-		jobLogSummaryActionJobMap["recap"] = []map[string]interface{}{RecapMap})
+		RecapMap := resourceIBMSchematicsJobJobLogSummaryActionJobRecapToMap(*jobLogSummaryActionJob.Recap)
+		jobLogSummaryActionJobMap["recap"] = []map[string]interface{}{RecapMap}
 	}
 
 	return jobLogSummaryActionJobMap
@@ -1910,7 +1922,7 @@ func resourceIBMSchematicsJobUpdate(d *schema.ResourceData, meta interface{}) er
 		replaceJobOptions.SetCommandParameter(d.Get("command_parameter").(string))
 	}
 	if _, ok := d.GetOk("command_options"); ok {
-		replaceJobOptions.SetCommandOptions(d.Get("command_options"))
+		replaceJobOptions.SetCommandOptions(expandStringList(d.Get("command_options").([]interface{})))
 	}
 	if _, ok := d.GetOk("inputs"); ok {
 		var inputs []schematicsv1.VariableData
@@ -1931,7 +1943,7 @@ func resourceIBMSchematicsJobUpdate(d *schema.ResourceData, meta interface{}) er
 		replaceJobOptions.SetSettings(settings)
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		replaceJobOptions.SetTags(d.Get("tags"))
+		replaceJobOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("location"); ok {
 		replaceJobOptions.SetLocation(d.Get("location").(string))

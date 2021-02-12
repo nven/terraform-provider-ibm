@@ -18,10 +18,10 @@ package ibm
 
 import (
 	"fmt"
+	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"null"
 	"testing"
 )
 

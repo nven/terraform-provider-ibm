@@ -18,9 +18,10 @@ package ibm
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"log"
 )
 
 func dataSourceIBMSchematicsJob() *schema.Resource {
@@ -1098,7 +1099,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 	}
 }
 
-
 func dataSourceIBMSchematicsJobRead(d *schema.ResourceData, meta interface{}) error {
 	schematicsClient, err := meta.(ClientSession).SchematicsV1()
 	if err != nil {
@@ -1106,7 +1106,6 @@ func dataSourceIBMSchematicsJobRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	getJobOptions := &schematicsv1.GetJobOptions{}
-
 
 	getJobOptions.SetJobID(d.Get("job_id").(string))
 
@@ -1144,7 +1143,6 @@ func dataSourceIBMSchematicsJobRead(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 
-
 	if job.Settings != nil {
 		err = d.Set("settings", dataSourceJobFlattenSettings(job.Settings))
 		if err != nil {
@@ -1167,17 +1165,23 @@ func dataSourceIBMSchematicsJobRead(d *schema.ResourceData, meta interface{}) er
 	if err = d.Set("resource_group", job.ResourceGroup); err != nil {
 		return fmt.Errorf("Error setting resource_group: %s", err)
 	}
-	if err = d.Set("submitted_at", job.SubmittedAt); err != nil {
-		return fmt.Errorf("Error setting submitted_at: %s", err)
+	if job.SubmittedAt != nil {
+		if err = d.Set("submitted_at", job.SubmittedAt.String()); err != nil {
+			return fmt.Errorf("Error setting submitted_at: %s", err)
+		}
 	}
 	if err = d.Set("submitted_by", job.SubmittedBy); err != nil {
 		return fmt.Errorf("Error setting submitted_by: %s", err)
 	}
-	if err = d.Set("start_at", job.StartAt); err != nil {
-		return fmt.Errorf("Error setting start_at: %s", err)
+	if job.StartAt != nil {
+		if err = d.Set("start_at", job.StartAt.String()); err != nil {
+			return fmt.Errorf("Error setting start_at: %s", err)
+		}
 	}
-	if err = d.Set("end_at", job.EndAt); err != nil {
-		return fmt.Errorf("Error setting end_at: %s", err)
+	if job.EndAt != nil {
+		if err = d.Set("end_at", job.EndAt.String()); err != nil {
+			return fmt.Errorf("Error setting end_at: %s", err)
+		}
 	}
 	if err = d.Set("duration", job.Duration); err != nil {
 		return fmt.Errorf("Error setting duration: %s", err)
@@ -1222,8 +1226,10 @@ func dataSourceIBMSchematicsJobRead(d *schema.ResourceData, meta interface{}) er
 	if err = d.Set("results_url", job.ResultsURL); err != nil {
 		return fmt.Errorf("Error setting results_url: %s", err)
 	}
-	if err = d.Set("updated_at", job.UpdatedAt); err != nil {
-		return fmt.Errorf("Error setting updated_at: %s", err)
+	if job.UpdatedAt != nil {
+		if err = d.Set("updated_at", job.UpdatedAt.String()); err != nil {
+			return fmt.Errorf("Error setting updated_at: %s", err)
+		}
 	}
 
 	return nil
@@ -1314,7 +1320,60 @@ func dataSourceJobInputsMetadataToMap(metadataItem schematicsv1.VariableMetadata
 	return metadataMap
 }
 
+func dataSourceJobOutputsMetadataToMap(metadataItem schematicsv1.VariableMetadata) (metadataMap map[string]interface{}) {
+	metadataMap = map[string]interface{}{}
 
+	if metadataItem.Type != nil {
+		metadataMap["type"] = metadataItem.Type
+	}
+	if metadataItem.Aliases != nil {
+		metadataMap["aliases"] = metadataItem.Aliases
+	}
+	if metadataItem.Description != nil {
+		metadataMap["description"] = metadataItem.Description
+	}
+	if metadataItem.DefaultValue != nil {
+		metadataMap["default_value"] = metadataItem.DefaultValue
+	}
+	if metadataItem.Secure != nil {
+		metadataMap["secure"] = metadataItem.Secure
+	}
+	if metadataItem.Immutable != nil {
+		metadataMap["immutable"] = metadataItem.Immutable
+	}
+	if metadataItem.Hidden != nil {
+		metadataMap["hidden"] = metadataItem.Hidden
+	}
+	if metadataItem.Options != nil {
+		metadataMap["options"] = metadataItem.Options
+	}
+	if metadataItem.MinValue != nil {
+		metadataMap["min_value"] = metadataItem.MinValue
+	}
+	if metadataItem.MaxValue != nil {
+		metadataMap["max_value"] = metadataItem.MaxValue
+	}
+	if metadataItem.MinLength != nil {
+		metadataMap["min_length"] = metadataItem.MinLength
+	}
+	if metadataItem.MaxLength != nil {
+		metadataMap["max_length"] = metadataItem.MaxLength
+	}
+	if metadataItem.Matches != nil {
+		metadataMap["matches"] = metadataItem.Matches
+	}
+	if metadataItem.Position != nil {
+		metadataMap["position"] = metadataItem.Position
+	}
+	if metadataItem.GroupBy != nil {
+		metadataMap["group_by"] = metadataItem.GroupBy
+	}
+	if metadataItem.Source != nil {
+		metadataMap["source"] = metadataItem.Source
+	}
+
+	return metadataMap
+}
 
 func dataSourceJobFlattenSettings(result []schematicsv1.VariableData) (settings []map[string]interface{}) {
 	for _, settingsItem := range result {
@@ -1401,8 +1460,6 @@ func dataSourceJobSettingsMetadataToMap(metadataItem schematicsv1.VariableMetada
 	return metadataMap
 }
 
-
-
 func dataSourceJobFlattenStatus(result schematicsv1.JobStatus) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceJobStatusToMap(result)
@@ -1449,13 +1506,11 @@ func dataSourceJobStatusActionJobStatusToMap(actionJobStatusItem schematicsv1.Jo
 		actionJobStatusMap["targets_status_message"] = actionJobStatusItem.TargetsStatusMessage
 	}
 	if actionJobStatusItem.UpdatedAt != nil {
-		actionJobStatusMap["updated_at"] = actionJobStatusItem.UpdatedAt
+		actionJobStatusMap["updated_at"] = actionJobStatusItem.UpdatedAt.String()
 	}
 
 	return actionJobStatusMap
 }
-
-
 
 func dataSourceJobFlattenData(result schematicsv1.JobData) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
@@ -1509,7 +1564,7 @@ func dataSourceJobDataActionJobDataToMap(actionJobDataItem schematicsv1.JobDataA
 		actionJobDataMap["settings"] = settingsList
 	}
 	if actionJobDataItem.UpdatedAt != nil {
-		actionJobDataMap["updated_at"] = actionJobDataItem.UpdatedAt
+		actionJobDataMap["updated_at"] = actionJobDataItem.UpdatedAt.String()
 	}
 
 	return actionJobDataMap
@@ -1537,7 +1592,6 @@ func dataSourceJobActionJobDataInputsToMap(inputsItem schematicsv1.VariableData)
 	return inputsMap
 }
 
-
 func dataSourceJobActionJobDataOutputsToMap(outputsItem schematicsv1.VariableData) (outputsMap map[string]interface{}) {
 	outputsMap = map[string]interface{}{}
 
@@ -1560,7 +1614,6 @@ func dataSourceJobActionJobDataOutputsToMap(outputsItem schematicsv1.VariableDat
 	return outputsMap
 }
 
-
 func dataSourceJobActionJobDataSettingsToMap(settingsItem schematicsv1.VariableData) (settingsMap map[string]interface{}) {
 	settingsMap = map[string]interface{}{}
 
@@ -1582,9 +1635,6 @@ func dataSourceJobActionJobDataSettingsToMap(settingsItem schematicsv1.VariableD
 
 	return settingsMap
 }
-
-
-
 
 func dataSourceJobFlattenBastion(result schematicsv1.TargetResourceset) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
@@ -1616,13 +1666,13 @@ func dataSourceJobBastionToMap(bastionItem schematicsv1.TargetResourceset) (bast
 		bastionMap["id"] = bastionItem.ID
 	}
 	if bastionItem.CreatedAt != nil {
-		bastionMap["created_at"] = bastionItem.CreatedAt
+		bastionMap["created_at"] = bastionItem.CreatedAt.String()
 	}
 	if bastionItem.CreatedBy != nil {
 		bastionMap["created_by"] = bastionItem.CreatedBy
 	}
 	if bastionItem.UpdatedAt != nil {
-		bastionMap["updated_at"] = bastionItem.UpdatedAt
+		bastionMap["updated_at"] = bastionItem.UpdatedAt.String()
 	}
 	if bastionItem.UpdatedBy != nil {
 		bastionMap["updated_by"] = bastionItem.UpdatedBy
@@ -1656,8 +1706,6 @@ func dataSourceJobBastionSysLockToMap(sysLockItem schematicsv1.SystemLock) (sysL
 	return sysLockMap
 }
 
-
-
 func dataSourceJobFlattenLogSummary(result schematicsv1.JobLogSummary) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceJobLogSummaryToMap(result)
@@ -1676,10 +1724,10 @@ func dataSourceJobLogSummaryToMap(logSummaryItem schematicsv1.JobLogSummary) (lo
 		logSummaryMap["job_type"] = logSummaryItem.JobType
 	}
 	if logSummaryItem.LogStartAt != nil {
-		logSummaryMap["log_start_at"] = logSummaryItem.LogStartAt
+		logSummaryMap["log_start_at"] = logSummaryItem.LogStartAt.String()
 	}
 	if logSummaryItem.LogAnalyzedTill != nil {
-		logSummaryMap["log_analyzed_till"] = logSummaryItem.LogAnalyzedTill
+		logSummaryMap["log_analyzed_till"] = logSummaryItem.LogAnalyzedTill.String()
 	}
 	if logSummaryItem.ElapsedTime != nil {
 		logSummaryMap["elapsed_time"] = logSummaryItem.ElapsedTime
@@ -1723,7 +1771,6 @@ func dataSourceJobLogSummaryLogErrorsToMap(logErrorsItem schematicsv1.JobLogSumm
 	return logErrorsMap
 }
 
-
 func dataSourceJobLogSummaryRepoDownloadJobToMap(repoDownloadJobItem schematicsv1.JobLogSummaryRepoDownloadJob) (repoDownloadJobMap map[string]interface{}) {
 	repoDownloadJobMap = map[string]interface{}{}
 
@@ -1745,7 +1792,6 @@ func dataSourceJobLogSummaryRepoDownloadJobToMap(repoDownloadJobItem schematicsv
 
 	return repoDownloadJobMap
 }
-
 
 func dataSourceJobLogSummaryActionJobToMap(actionJobItem schematicsv1.JobLogSummaryActionJob) (actionJobMap map[string]interface{}) {
 	actionJobMap = map[string]interface{}{}
@@ -1793,7 +1839,3 @@ func dataSourceJobActionJobRecapToMap(recapItem schematicsv1.JobLogSummaryAction
 
 	return recapMap
 }
-
-
-
-
