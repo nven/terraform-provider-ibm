@@ -1194,6 +1194,7 @@ func resourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{}) e
 	getActionOptions := &schematicsv1.GetActionOptions{}
 
 	getActionOptions.SetActionID(d.Id())
+	getActionOptions.SetProfile("detailed")
 
 	action, response, err := schematicsClient.GetAction(getActionOptions)
 	if err != nil {
@@ -1306,9 +1307,6 @@ func resourceIBMSchematicsActionRead(d *schema.ResourceData, meta interface{}) e
 		if err = d.Set("sys_lock", []map[string]interface{}{sysLockMap}); err != nil {
 			return fmt.Errorf("Error reading sys_lock: %s", err)
 		}
-	}
-	if err = d.Set("x_github_token", action.XGithubToken); err != nil {
-		return fmt.Errorf("Error reading x_github_token: %s", err)
 	}
 	if err = d.Set("crn", action.Crn); err != nil {
 		return fmt.Errorf("Error reading crn: %s", err)
@@ -1644,6 +1642,7 @@ func resourceIBMSchematicsActionExists(d *schema.ResourceData, meta interface{})
 	getActionOptions := &schematicsv1.GetActionOptions{}
 
 	getActionOptions.SetActionID(d.Id())
+	getActionOptions.SetProfile("detailed")
 
 	action, response, err := schematicsClient.GetAction(getActionOptions)
 	if err != nil {

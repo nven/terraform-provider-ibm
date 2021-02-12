@@ -316,6 +316,7 @@ func resourceIBMSchematicsJob() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "Job Status.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -859,6 +860,7 @@ func resourceIBMSchematicsJob() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "Job log summary record.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1554,10 +1556,6 @@ func resourceIBMSchematicsJobRead(d *schema.ResourceData, meta interface{}) erro
 		log.Printf("[DEBUG] GetJob failed %s\n%s", err, response)
 		return err
 	}
-
-	if err = d.Set("refresh_token", job.RefreshToken); err != nil {
-		return fmt.Errorf("Error reading refresh_token: %s", err)
-	}
 	if err = d.Set("command_object", job.CommandObject); err != nil {
 		return fmt.Errorf("Error reading command_object: %s", err)
 	}
@@ -1567,8 +1565,8 @@ func resourceIBMSchematicsJobRead(d *schema.ResourceData, meta interface{}) erro
 	if err = d.Set("command_name", job.CommandName); err != nil {
 		return fmt.Errorf("Error reading command_name: %s", err)
 	}
-	if err = d.Set("command_parameter", job.CommandParameter); err != nil {
-		return fmt.Errorf("Error reading command_parameter: %s", err)
+	if _, ok := d.GetOk("command_parameter"); ok {
+		d.Set("command_parameter", d.Get("command_parameter").(string))
 	}
 	if job.CommandOptions != nil {
 		if err = d.Set("command_options", job.CommandOptions); err != nil {
@@ -1975,12 +1973,20 @@ func resourceIBMSchematicsJobUpdate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMSchematicsJobDelete(d *schema.ResourceData, meta interface{}) error {
+	session, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return err
+	}
+
 	schematicsClient, err := meta.(ClientSession).SchematicsV1()
 	if err != nil {
 		return err
 	}
 
 	deleteJobOptions := &schematicsv1.DeleteJobOptions{}
+
+	iamRefreshToken := session.Config.IAMRefreshToken
+	deleteJobOptions.SetRefreshToken(iamRefreshToken)
 
 	deleteJobOptions.SetJobID(d.Id())
 
