@@ -15,6 +15,7 @@ require (
 	github.com/IBM/keyprotect-go-client v0.5.2
 	github.com/IBM/networking-go-sdk v0.12.1
 	github.com/IBM/platform-services-go-sdk v0.17.3
+	github.com/IBM/schematics-go-sdk v0.0.2
 	github.com/IBM/vpc-go-sdk v0.4.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.27.2
@@ -25,6 +26,7 @@ require (
 	github.com/dchest/safefile v0.0.0-20151022103144-855e8d98f185 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
+	github.com/go-openapi/strfmt v0.20.0
 	github.com/go-openapi/validate v0.20.1 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
