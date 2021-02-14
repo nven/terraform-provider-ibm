@@ -51,12 +51,12 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "List of workspace locations supported by IBM Cloud Schematics service.  Note, this does not limit the location of the resources provisioned using Schematics.",
+				Description: "List of action locations supported by IBM Cloud Schematics service.  **Note** this does not limit the location of the resources provisioned using Schematics.",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Resource-group name for the Action.  By default, Action will be created in Default Resource Group.",
+				Description: "Resource-group name for an action.  By default, action is created in default resource group.",
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
@@ -74,19 +74,19 @@ func resourceIBMSchematicsAction() *schema.Resource {
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "User-defined states  * `draft` Object can be modified; can be used by Jobs run by the author, during execution  * `live` Object can be modified; can be used by Jobs during execution  * `locked` Object cannot be modified; can be used by Jobs during execution  * `disable` Object can be modified. cannot be used by Jobs during execution.",
+							Description: "User defined states  * `draft` Object can be modified, and can be used by jobs run by an author, during execution  * `live` Object can be modified, and can be used by jobs during execution  * `locked` Object cannot be modified, and can be used by jobs during execution  * `disable` Object can be modified, and cannot be used by Jobs during execution.",
 						},
 						"set_by": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "Name of the User who set the state of the Object.",
+							Description: "Name of the user who set the state of an Object.",
 						},
 						"set_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "When the User who set the state of the Object.",
+							Description: "When the user who set the state of an Object.",
 						},
 					},
 				},
@@ -94,7 +94,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"source_readme_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "URL of the README file, for the source.",
+				Description: "URL of the `README` file, for the source.",
 			},
 			"source": &schema.Schema{
 				Type:        schema.TypeList,
@@ -161,7 +161,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Complete Target details with user inputs and system generated data.",
+				Description: "Complete target details with the user inputs and the system generated data.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -172,7 +172,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Target type (cluster, vsi, icd, vpc).",
+							Description: "Target type (`cluster`, `vsi`, `icd`, `vpc`).",
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
@@ -187,13 +187,13 @@ func resourceIBMSchematicsAction() *schema.Resource {
 						"credential_ref": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Override credential for each resource.  Reference to credentials values, used by all resources.",
+							Description: "Override credential for each resource.  Reference to credentials values, used by all the resources.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "Target id.",
+							Description: "Target ID.",
 						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
@@ -205,7 +205,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "Email address of user who created the Targets.",
+							Description: "E-mail address of the user who created the targets.",
 						},
 						"updated_at": &schema.Schema{
 							Type:        schema.TypeString,
@@ -217,7 +217,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "Email address of user who updated the Targets.",
+							Description: "E-mail address of user who updated the targets.",
 						},
 						"sys_lock": &schema.Schema{
 							Type:        schema.TypeList,
@@ -229,17 +229,17 @@ func resourceIBMSchematicsAction() *schema.Resource {
 									"sys_locked": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
-										Description: "Is the Workspace locked by a Schematic action ?.",
+										Description: "Is the Workspace locked by the Schematic action ?.",
 									},
 									"sys_locked_by": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Name of the User who performed the action, that lead to the locking of the Workspace.",
+										Description: "Name of the user who performed the action, that lead to lock the Workspace.",
 									},
 									"sys_locked_at": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "When the User performed the action that lead to locking of the Workspace ?.",
+										Description: "When the user performed the action that lead to lock the Workspace ?.",
 									},
 								},
 							},
@@ -248,7 +248,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Computed:    true,
-							Description: "Array of resource ids.",
+							Description: "Array of the resource IDs.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 					},
@@ -257,7 +257,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"targets_ini": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Inventory of host and host group for the playbook, in .ini file format.",
+				Description: "Inventory of host and host group for the playbook in `INI` file format. For example, `\"targets_ini\": \"[webserverhost]  172.22.192.6  [dbhost]  172.22.192.5\"`. For more information, about an inventory host group syntax, see [Inventory host groups](/docs/schematics?topic=schematics-schematics-cli-reference#schematics-inventory-host-grps).",
 			},
 			"credentials": &schema.Schema{
 				Type:        schema.TypeList,
@@ -379,7 +379,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"inputs": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Input variables for the Action.",
+				Description: "Input variables for an action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -496,7 +496,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"outputs": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Output variables for the Action.",
+				Description: "Output variables for an action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -613,7 +613,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"settings": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Environment variables for the Action.",
+				Description: "Environment variables for an action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -730,14 +730,14 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"trigger_record_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Id to the Trigger.",
+				Description: "ID to the trigger.",
 			},
 			"state": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
 				Computed:    true,
-				Description: "Computed state of the Action.",
+				Description: "Computed state of an action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"status_code": &schema.Schema{
@@ -769,17 +769,17 @@ func resourceIBMSchematicsAction() *schema.Resource {
 						"sys_locked": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "Is the Workspace locked by a Schematic action ?.",
+							Description: "Is the Workspace locked by the Schematic action ?.",
 						},
 						"sys_locked_by": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Name of the User who performed the action, that lead to the locking of the Workspace.",
+							Description: "Name of the user who performed the action, that lead to lock the Workspace.",
 						},
 						"sys_locked_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "When the User performed the action that lead to locking of the Workspace ?.",
+							Description: "When the user performed the action that lead to lock the Workspace ?.",
 						},
 					},
 				},
@@ -787,7 +787,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"x_github_token": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The github token associated with the GIT. Required for cloning of repo.",
+				Description: "The personal access token to authenticate with your private GitHub or GitLab repository and access your Terraform template.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -797,7 +797,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"account": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Action account id.",
+				Description: "Action account ID.",
 			},
 			"source_created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -807,17 +807,17 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"source_created_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Email address of user who created the Action Playbook Source.",
+				Description: "E-mail address of user who created the Action Playbook Source.",
 			},
 			"source_updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Action Playbook updation time.",
+				Description: "The action playbook updation time.",
 			},
 			"source_updated_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Email address of user who updated the Action Playbook Source.",
+				Description: "E-mail address of user who updated the action playbook source.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -827,7 +827,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"created_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Email address of user who created the action.",
+				Description: "E-mail address of the user who created an action.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -837,17 +837,17 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"updated_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Email address of user who updated the action.",
+				Description: "E-mail address of the user who updated an action.",
 			},
 			"namespace": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "name of the namespace.",
+				Description: "Name of the namespace.",
 			},
 			"playbook_names": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Playbook names retrieved from repo.",
+				Description: "Playbook names retrieved from the respository.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
