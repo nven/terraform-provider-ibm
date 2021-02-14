@@ -24,6 +24,7 @@ import (
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 func resourceIBMSchematicsAction() *schema.Resource {
@@ -37,9 +38,10 @@ func resourceIBMSchematicsAction() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Action name (unique for an account).",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Action name (unique for an account).",
+				ValidateFunc: validation.StringLenBetween(1, 65),
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
@@ -114,9 +116,10 @@ func resourceIBMSchematicsAction() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"git_repo_url": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "URL to the GIT Repo that can be used to clone the template.",
+										Type:         schema.TypeString,
+										Optional:     true,
+										Description:  "URL to the GIT Repo that can be used to clone the template.",
+										ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 									},
 									"git_token": &schema.Schema{
 										Type:        schema.TypeString,

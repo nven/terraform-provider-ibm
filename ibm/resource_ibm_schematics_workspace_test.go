@@ -51,10 +51,7 @@ func testAccCheckIBMSchematicsWorkspaceConfigBasic() string {
 			name = "tf-acc-test-schematics"
 			location = "us-east"
 			resource_group = "default"
-			template_data {
-				type = "terraform_v0.12.20"
-			}
-			type = ["terraform_v0.12.20"]	
+			template_type = "terraform_v0.12.20"
 		}
 	`)
 }
@@ -68,10 +65,7 @@ func testAccCheckIBMSchematicsWorkspaceConfig(description string, location strin
 			name = "%s"
 			resource_group = "%s"
 			template_ref = "%s"
-			template_data {
-				type = "terraform_v0.12.20"
-			}
-			type = ["terraform_v0.12.20"]
+			template_type = "terraform_v0.12.20"
 		}
 	`, description, location, name, resourceGroup, templateRef)
 }
