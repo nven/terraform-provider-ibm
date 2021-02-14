@@ -249,117 +249,79 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"template_data": &schema.Schema{
+			"template_env_settings": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Workspace template data.",
+				Description: "EnvVariableRequest ..",
+				Elem:        &schema.Schema{Type: schema.TypeMap},
+			},
+			"template_git_folder": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Folder name.",
+			},
+			"template_init_state_file": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Init state file.",
+			},
+			"template_type": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Template type.",
+			},
+			"template_uninstall_script_name": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Uninstall script name.",
+			},
+			"template_values": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Value.",
+			},
+			"template_values_metadata": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "List of values metadata.",
+				Elem:        &schema.Schema{Type: schema.TypeMap},
+			},
+			"template_inputs": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "VariablesRequest -.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"env_values": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of environment values.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"hidden": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "Env variable is hidden.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Env variable name.",
-									},
-									"secure": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "Env variable is secure.",
-									},
-									"value": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Value for env variable.",
-									},
-								},
-							},
-						},
-						"folder": &schema.Schema{
+						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Folder name.",
+							Description: "Variable description.",
 						},
-						"has_githubtoken": &schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Variable name.",
+						},
+						"secure": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Has github token.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Template id.",
+							Description: "Variable is secure.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Template tyoe.",
+							Description: "Variable type.",
 						},
-						"uninstall_script_name": &schema.Schema{
+						"use_default": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Variable uses default value; and is not over-ridden.",
+						},
+						"value": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Uninstall script name.",
-						},
-						"values": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Values.",
-						},
-						"values_metadata": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of values metadata.",
-							Elem: &schema.Schema{
-								Type: schema.TypeMap,
-							},
-						},
-						"values_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Values URL.",
-						},
-						"variablestore": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "VariablesResponse -.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"description": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Variable descrption.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Variable name.",
-									},
-									"secure": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "Variable is secure.",
-									},
-									"type": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Variable type.",
-									},
-									"value": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Value of the Variable.",
-									},
-								},
-							},
+							Description: "Value of the Variable.",
 						},
 					},
 				},
@@ -369,58 +331,49 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 				Computed:    true,
 				Description: "Workspace template ref.",
 			},
-			"template_repo": &schema.Schema{
-				Type:        schema.TypeList,
+			"template_git_branch": &schema.Schema{
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "TemplateRepoResponse -.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"branch": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Repo branch.",
-						},
-						"full_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Full repo URL.",
-						},
-						"has_uploadedgitrepotar": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Has uploaded git repo tar.",
-						},
-						"release": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Repo release.",
-						},
-						"repo_sha_value": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Repo SHA value.",
-						},
-						"repo_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Repo URL.",
-						},
-						"url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Source URL.",
-						},
-					},
-				},
+				Description: "Repo branch.",
 			},
-			"type": &schema.Schema{
-				Type:        schema.TypeList,
+			"template_git_full_url": &schema.Schema{
+				Type:        schema.TypeString,
 				Computed:    true,
+				Description: "Full repo URL.",
+			},
+			"template_git_has_uploadedgitrepotar": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Has uploaded git repo tar",
+			},
+			"template_git_release": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Repo release.",
+			},
+			"template_git_repo_sha_value": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Repo SHA value.",
+			},
+			"template_git_repo_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Repo URL.",
+			},
+			"template_git_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Source URL.",
+			},
+
+			/*"template_type": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
 				Description: "List of Workspace type.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},*/
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -431,63 +384,45 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 				Computed:    true,
 				Description: "Workspace updated by.",
 			},
-			"workspace_status": &schema.Schema{
-				Type:        schema.TypeList,
+			"frozen": &schema.Schema{
+				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "WorkspaceStatusResponse -.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"frozen": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Frozen status.",
-						},
-						"frozen_at": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Frozen at.",
-						},
-						"frozen_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Frozen by.",
-						},
-						"locked": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Locked status.",
-						},
-						"locked_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Locked by.",
-						},
-						"locked_time": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Locked at.",
-						},
-					},
-				},
+				Description: "Frozen status.",
 			},
-			"workspace_status_msg": &schema.Schema{
-				Type:        schema.TypeList,
+			"frozen_at": &schema.Schema{
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "WorkspaceStatusMessage -.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"status_code": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Status code.",
-						},
-						"status_msg": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Status message.",
-						},
-					},
-				},
+				Description: "Frozen at.",
+			},
+			"frozen_by": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Frozen by.",
+			},
+			"locked": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Locked status.",
+			},
+			"locked_by": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Locked by.",
+			},
+			"locked_time": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Locked at.",
+			},
+			"status_code": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status code.",
+			},
+			"status_msg": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status message.",
 			},
 		},
 	}
@@ -569,9 +504,31 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	}
 
 	if workspaceResponse.TemplateData != nil {
-		err = d.Set("template_data", dataSourceWorkspaceResponseFlattenTemplateData(workspaceResponse.TemplateData))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting template_data %s", err))
+		templateData := dataSourceWorkspaceResponseFlattenTemplateData(workspaceResponse.TemplateData)
+
+		if err = d.Set("template_env_settings", templateData[0]["env_values"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading env_values: %s", err))
+		}
+		if err = d.Set("template_git_folder", templateData[0]["folder"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading folder: %s", err))
+		}
+		if err = d.Set("template_init_state_file", templateData[0]["init_state_file"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading init_state_file: %s", err))
+		}
+		if err = d.Set("template_type", templateData[0]["type"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading type: %s", err))
+		}
+		if err = d.Set("template_uninstall_script_name", templateData[0]["uninstall_script_name"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading uninstall_script_name: %s", err))
+		}
+		if err = d.Set("template_values", templateData[0]["values"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading values: %s", err))
+		}
+		if err = d.Set("template_values_metadata", templateData[0]["values_metadata"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading values_metadata: %s", err))
+		}
+		if err = d.Set("template_inputs", templateData[0]["variablestore"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading variablestore: %s", err))
 		}
 	}
 	if err = d.Set("template_ref", workspaceResponse.TemplateRef); err != nil {
@@ -579,32 +536,67 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	}
 
 	if workspaceResponse.TemplateRepo != nil {
-		err = d.Set("template_repo", dataSourceWorkspaceResponseFlattenTemplateRepo(*workspaceResponse.TemplateRepo))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting template_repo %s", err))
+		templateRepoMap := dataSourceWorkspaceResponseFlattenTemplateRepo(*workspaceResponse.TemplateRepo)
+		if err = d.Set("template_git_branch", templateRepoMap[0]["branch"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading branch: %s", err))
+		}
+		if err = d.Set("template_git_release", templateRepoMap[0]["release"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading release: %s", err))
+		}
+		if err = d.Set("template_git_repo_sha_value", templateRepoMap[0]["repo_sha_value"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading repo_sha_value: %s", err))
+		}
+		if err = d.Set("template_git_repo_url", templateRepoMap[0]["repo_url"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading repo_url: %s", err))
+		}
+		if err = d.Set("template_git_url", templateRepoMap[0]["url"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading url: %s", err))
+		}
+		if err = d.Set("template_git_has_uploadedgitrepotar", templateRepoMap[0]["has_uploadedgitrepotar"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading has_uploadedgitrepotar: %s", err))
 		}
 	}
-	if err = d.Set("type", workspaceResponse.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
-	}
-	if err = d.Set("updated_at", workspaceResponse.UpdatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	/*if err = d.Set("type", workspaceResponse.Type); err != nil {
+		return fmt.Errorf("Error setting type: %s", err)
+	}*/
+	if workspaceResponse.UpdatedAt != nil {
+		if err = d.Set("updated_at", workspaceResponse.UpdatedAt.String()); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
 	}
 	if err = d.Set("updated_by", workspaceResponse.UpdatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
 	}
 
 	if workspaceResponse.WorkspaceStatus != nil {
-		err = d.Set("workspace_status", dataSourceWorkspaceResponseFlattenWorkspaceStatus(*workspaceResponse.WorkspaceStatus))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting workspace_status %s", err))
+		workspaceStatusMap := dataSourceWorkspaceResponseFlattenWorkspaceStatus(*workspaceResponse.WorkspaceStatus)
+		if err = d.Set("frozen", workspaceStatusMap[0]["frozen"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading frozen: %s", err))
+		}
+		if err = d.Set("frozen_at", workspaceStatusMap[0]["frozen_at"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading frozen_at: %s", err))
+		}
+		if err = d.Set("frozen_by", workspaceStatusMap[0]["frozen_by"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading frozen_by: %s", err))
+		}
+		if err = d.Set("locked", workspaceStatusMap[0]["locked"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading locked: %s", err))
+		}
+		if err = d.Set("locked_by", workspaceStatusMap[0]["locked_by"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading locked_by: %s", err))
+		}
+		if err = d.Set("locked_time", workspaceStatusMap[0]["locked_time"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading locked_time: %s", err))
 		}
 	}
 
 	if workspaceResponse.WorkspaceStatusMsg != nil {
-		err = d.Set("workspace_status_msg", dataSourceWorkspaceResponseFlattenWorkspaceStatusMsg(*workspaceResponse.WorkspaceStatusMsg))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting workspace_status_msg %s", err))
+		workspaceStatusMsgMap := dataSourceWorkspaceResponseFlattenWorkspaceStatusMsg(*workspaceResponse.WorkspaceStatusMsg)
+		if err = d.Set("status_code", workspaceStatusMsgMap[0]["status_code"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading status_code: %s", err))
+		}
+		if err = d.Set("status_msg", workspaceStatusMsgMap[0]["status_msg"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading status_msg: %s", err))
 		}
 	}
 

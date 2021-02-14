@@ -24,9 +24,14 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/schematics-go-sdk/schematicsv1"
+)
+
+const (
+	actionName = "name"
 )
 
 func resourceIBMSchematicsAction() *schema.Resource {
@@ -39,9 +44,10 @@ func resourceIBMSchematicsAction() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Action name (unique for an account).",
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "Action name (unique for an account).",
+				ValidateFunc: InvokeValidator("ibm_schematics_action", actionName),
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
@@ -115,9 +121,10 @@ func resourceIBMSchematicsAction() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"git_repo_url": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "URL to the GIT Repo that can be used to clone the template.",
+										Type:         schema.TypeString,
+										Optional:     true,
+										Description:  "URL to the GIT Repo that can be used to clone the template.",
+										ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 									},
 									"git_token": &schema.Schema{
 										Type:        schema.TypeString,
@@ -854,7 +861,7 @@ func resourceIBMSchematicsActionValidator() *ResourceValidator {
 			ValidateFunctionIdentifier: ValidateAllowedStringValue,
 			Type:                       TypeString,
 			Optional:                   true,
-			AllowedValues:              "eu_de, eu_gb, us_east, us_south",
+			AllowedValues:              "eu-de, eu-gb, us-east, us-south",
 		},
 		ValidateSchema{
 			Identifier:                 "source_type",
@@ -862,6 +869,14 @@ func resourceIBMSchematicsActionValidator() *ResourceValidator {
 			Type:                       TypeString,
 			Optional:                   true,
 			AllowedValues:              "external_scm, git_hub, git_hub_enterprise, git_lab, ibm_cloud_catalog, ibm_git_lab, local",
+		},
+		ValidateSchema{
+			Identifier:                 actionName,
+			ValidateFunctionIdentifier: StringLenBetween,
+			Type:                       TypeString,
+			MinValueLength:             1,
+			MaxValueLength:             65,
+			Optional:                   true,
 		})
 
 	resourceValidator := ResourceValidator{ResourceName: "ibm_schematics_action", Schema: validateSchema}
@@ -1112,7 +1127,7 @@ func resourceIBMSchematicsActionMapToVariableData(variableDataMap map[string]int
 	if variableDataMap["value"] != nil {
 		variableData.Value = core.StringPtr(variableDataMap["value"].(string))
 	}
-	if variableDataMap["metadata"] != nil {
+	if variableDataMap["metadata"] != nil && len(variableDataMap["metadata"].([]interface{})) != 0 {
 		variableMetaData := resourceIBMSchematicsJobMapToVariableMetadata(variableDataMap["metadata"].([]interface{})[0].(map[string]interface{}))
 		variableData.Metadata = &variableMetaData
 	}

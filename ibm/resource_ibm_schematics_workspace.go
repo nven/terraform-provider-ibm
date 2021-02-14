@@ -27,6 +27,13 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+)
+
+const (
+	schematicsWorkspaceName         = "name"
+	schematicsWorkspaceDescription  = "description"
+	schematicsWorkspaceTemplateType = "template_type"
 )
 
 func resourceIBMSchematicsWorkspace() *schema.Resource {
@@ -95,9 +102,10 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 				},
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Workspace description.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Workspace description.",
+				ValidateFunc: InvokeValidator("ibm_schematics_workspace", schematicsWorkspaceDescription),
 			},
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
@@ -105,9 +113,10 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 				Description: "Workspace location.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Workspace name.",
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "Workspace name.",
+				ValidateFunc: InvokeValidator("ibm_schematics_workspace", schematicsWorkspaceName),
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
@@ -181,88 +190,80 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 				Description: "Workspace tags.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"template_data": &schema.Schema{
+			"template_env_settings": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "TemplateData -.",
+				Description: "EnvVariableRequest ..",
+				Elem:        &schema.Schema{Type: schema.TypeMap},
+			},
+			"template_git_folder": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Folder name.",
+			},
+			"template_init_state_file": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Init state file.",
+			},
+			"template_type": &schema.Schema{
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "Template type.",
+				ValidateFunc: InvokeValidator("ibm_schematics_workspace", schematicsWorkspaceTemplateType),
+			},
+			"template_uninstall_script_name": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Uninstall script name.",
+			},
+			"template_values": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Value.",
+			},
+			"template_values_metadata": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "List of values metadata.",
+				Elem:        &schema.Schema{Type: schema.TypeMap},
+			},
+			"template_inputs": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "VariablesRequest -.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"env_values": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "EnvVariableRequest ..",
-							Elem:        &schema.Schema{Type: schema.TypeMap},
-						},
-						"folder": &schema.Schema{
+						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Folder name.",
+							Description: "Variable description.",
 						},
-						"init_state_file": &schema.Schema{
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Init state file.",
+							Description: "Variable name.",
+						},
+						"secure": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Variable is secure.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Template type.",
+							Optional:    true,
+							Description: "Variable type.",
 						},
-						"uninstall_script_name": &schema.Schema{
+						"use_default": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Variable uses default value; and is not over-ridden.",
+						},
+						"value": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Uninstall script name.",
-						},
-						"values": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Value.",
-						},
-						"values_metadata": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Computed:    true,
-							Description: "List of values metadata.",
-							Elem:        &schema.Schema{Type: schema.TypeMap},
-						},
-						"variablestore": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "VariablesRequest -.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"description": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Variable description.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Variable name.",
-									},
-									"secure": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "Variable is secure.",
-									},
-									"type": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Variable type.",
-									},
-									"use_default": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "Variable uses default value; and is not over-ridden.",
-									},
-									"value": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Value of the Variable.",
-									},
-								},
-							},
+							Description: "Value of the Variable.",
 						},
 					},
 				},
@@ -272,93 +273,76 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 				Optional:    true,
 				Description: "Workspace template ref.",
 			},
-			"template_repo": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
+			"template_git_branch": &schema.Schema{
+				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "TemplateRepoRequest -.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"branch": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Repo branch.",
-						},
-						"release": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Repo release.",
-						},
-						"repo_sha_value": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Repo SHA value.",
-						},
-						"repo_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Repo URL.",
-						},
-						"url": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Source URL.",
-						},
-						"has_uploadedgitrepotar": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "Has uploaded git repo tar",
-						},
-					},
-				},
+				Description: "Repo branch.",
 			},
-			"type": &schema.Schema{
+			"template_git_release": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Repo release.",
+			},
+			"template_git_repo_sha_value": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Repo SHA value.",
+			},
+			"template_git_repo_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Repo URL.",
+			},
+			"template_git_url": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Source URL.",
+				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			},
+			"template_git_has_uploadedgitrepotar": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Has uploaded git repo tar",
+			},
+			/*"template_type": &schema.Schema{
 				Type:        schema.TypeList,
 				Required:    true,
 				Description: "List of Workspace type.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
+			},*/
+			"frozen": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Frozen status.",
 			},
-			"workspace_status": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
+			"frozen_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Frozen at.",
+			},
+			"frozen_by": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Frozen by.",
+			},
+			"locked": &schema.Schema{
+				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,
-				Description: "WorkspaceStatusRequest -.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"frozen": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Frozen status.",
-						},
-						"frozen_at": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Frozen at.",
-						},
-						"frozen_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Frozen by.",
-						},
-						"locked": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Locked status.",
-						},
-						"locked_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Locked by.",
-						},
-						"locked_time": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Locked at.",
-						},
-					},
-				},
+				Description: "Locked status.",
+			},
+			"locked_by": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Locked by.",
+			},
+			"locked_time": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Locked at.",
 			},
 			"x_github_token": &schema.Schema{
 				Type:        schema.TypeString,
@@ -451,27 +435,52 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 				Computed:    true,
 				Description: "Workspace updated by.",
 			},
-			"workspace_status_msg": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "WorkspaceStatusMessage -.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"status_code": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Status code.",
-						},
-						"status_msg": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Status message.",
-						},
-					},
-				},
+			"status_code": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Status code.",
+			},
+			"status_msg": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Status message.",
 			},
 		},
 	}
+}
+
+func resourceIBMSchematicsWorkspaceValidator() *ResourceValidator {
+
+	validateSchema := make([]ValidateSchema, 1)
+
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 schematicsWorkspaceName,
+			ValidateFunctionIdentifier: ValidateRegexp,
+			Type:                       TypeString,
+			Regexp:                     `^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 schematicsWorkspaceDescription,
+			ValidateFunctionIdentifier: StringLenBetween,
+			Type:                       TypeString,
+			MinValueLength:             0,
+			MaxValueLength:             2048,
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 schematicsWorkspaceTemplateType,
+			ValidateFunctionIdentifier: ValidateRegexp,
+			Type:                       TypeString,
+			Regexp:                     `^terraform_v0\.(?:11|12|13)(?:\.\d+)?$`,
+			Default:                    "[]",
+			Optional:                   true})
+
+	ibmSchematicsWorkspaceResourceValidator := ResourceValidator{ResourceName: "ibm_schematics_workspace", Schema: validateSchema}
+	return &ibmSchematicsWorkspaceResourceValidator
 }
 
 func resourceIBMSchematicsWorkspaceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -508,29 +517,119 @@ func resourceIBMSchematicsWorkspaceCreate(context context.Context, d *schema.Res
 	if _, ok := d.GetOk("tags"); ok {
 		createWorkspaceOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 	}
-	if _, ok := d.GetOk("template_data"); ok {
-		var templateData []schematicsv1.TemplateSourceDataRequest
-		for _, e := range d.Get("template_data").([]interface{}) {
-			value := e.(map[string]interface{})
-			templateDataItem := resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(value)
-			templateData = append(templateData, templateDataItem)
-		}
+
+	var templateData []schematicsv1.TemplateSourceDataRequest
+
+	templateSourceDataRequestMap := map[string]interface{}{}
+	hasTemplateData := false
+
+	if _, ok := d.GetOk("template_env_settings"); ok {
+		templateSourceDataRequestMap["env_values"] = d.Get("template_env_settings").([]interface{})
+		hasTemplateData = true
+	}
+	if _, ok := d.GetOk("template_git_folder"); ok {
+		templateSourceDataRequestMap["folder"] = d.Get("template_git_folder").(string)
+		hasTemplateData = true
+	}
+	if _, ok := d.GetOk("template_init_state_file"); ok {
+		templateSourceDataRequestMap["init_state_file"] = d.Get("template_init_state_file").(string)
+		hasTemplateData = true
+	}
+	if _, ok := d.GetOk("template_type"); ok {
+		templateSourceDataRequestMap["type"] = d.Get("template_type").(string)
+		createWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
+		hasTemplateData = true
+	}
+	if _, ok := d.GetOk("template_uninstall_script_name"); ok {
+		templateSourceDataRequestMap["uninstall_script_name"] = d.Get("template_uninstall_script_name").(string)
+		hasTemplateData = true
+	}
+	if _, ok := d.GetOk("template_values"); ok {
+		templateSourceDataRequestMap["values"] = d.Get("template_values").(string)
+		hasTemplateData = true
+	}
+	if _, ok := d.GetOk("template_values_metadata"); ok {
+		templateSourceDataRequestMap["values_metadata"] = d.Get("template_values_metadata").([]interface{})
+		hasTemplateData = true
+	}
+	if _, ok := d.GetOk("template_inputs"); ok {
+		templateSourceDataRequestMap["variablestore"] = d.Get("template_inputs").([]interface{})
+		hasTemplateData = true
+	}
+	if hasTemplateData {
+		templateDataItem := resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSourceDataRequestMap)
+		templateData = append(templateData, templateDataItem)
 		createWorkspaceOptions.SetTemplateData(templateData)
 	}
 	if _, ok := d.GetOk("template_ref"); ok {
 		createWorkspaceOptions.SetTemplateRef(d.Get("template_ref").(string))
 	}
-	if _, ok := d.GetOk("template_repo"); ok {
-		templateRepo := resourceIBMSchematicsWorkspaceMapToTemplateRepoRequest(d.Get("template_repo.0").(map[string]interface{}))
+
+	templateRepoRequestMap := map[string]interface{}{}
+	hasTemplateRepo := false
+	if _, ok := d.GetOk("template_git_branch"); ok {
+		templateRepoRequestMap["branch"] = d.Get("template_git_branch").(string)
+		hasTemplateRepo = true
+	}
+	if _, ok := d.GetOk("template_git_release"); ok {
+		templateRepoRequestMap["release"] = d.Get("template_git_release").(string)
+		hasTemplateRepo = true
+	}
+	if _, ok := d.GetOk("template_git_repo_sha_value"); ok {
+		templateRepoRequestMap["repo_sha_value"] = d.Get("template_git_repo_sha_value").(string)
+		hasTemplateRepo = true
+	}
+	if _, ok := d.GetOk("template_git_repo_url"); ok {
+		templateRepoRequestMap["repo_url"] = d.Get("template_git_repo_url").(string)
+		hasTemplateRepo = true
+	}
+	if _, ok := d.GetOk("template_git_url"); ok {
+		templateRepoRequestMap["url"] = d.Get("template_git_url").(string)
+		hasTemplateRepo = true
+	}
+	if _, ok := d.GetOk("template_git_has_uploadedgitrepotar"); ok {
+		templateRepoRequestMap["has_uploadedgitrepotar"] = d.Get("template_git_has_uploadedgitrepotar").(string)
+		hasTemplateRepo = true
+	}
+	if hasTemplateRepo {
+		templateRepo := resourceIBMSchematicsWorkspaceMapToTemplateRepoRequest(templateRepoRequestMap)
 		createWorkspaceOptions.SetTemplateRepo(&templateRepo)
 	}
-	if _, ok := d.GetOk("type"); ok {
-		createWorkspaceOptions.SetType(expandStringList(d.Get("type").([]interface{})))
+
+	/*if _, ok := d.GetOk("template_type"); ok {
+		createWorkspaceOptions.SetType(expandStringList(d.Get("template_type").([]interface{})))
+	}*/
+	workspaceStatusRequestMap := map[string]interface{}{}
+	hasWorkspaceStatus := false
+	if _, ok := d.GetOk("frozen"); ok {
+		workspaceStatusRequestMap["frozen"] = d.Get("frozen").(bool)
+		hasWorkspaceStatus = true
 	}
-	if _, ok := d.GetOk("workspace_status"); ok {
-		workspaceStatus := resourceIBMSchematicsWorkspaceMapToWorkspaceStatusRequest(d.Get("workspace_status.0").(map[string]interface{}))
+	if _, ok := d.GetOk("frozen_at"); ok {
+		workspaceStatusRequestMap["frozen_at"] = d.Get("frozen_at").(string)
+		hasWorkspaceStatus = true
+	}
+	if _, ok := d.GetOk("frozen_by"); ok {
+		workspaceStatusRequestMap["frozen_by"] = d.Get("frozen_by").(string)
+		hasWorkspaceStatus = true
+	}
+	if _, ok := d.GetOk("locked"); ok {
+		workspaceStatusRequestMap["locked"] = d.Get("locked").(bool)
+		hasWorkspaceStatus = true
+	}
+	if _, ok := d.GetOk("locked_by"); ok {
+		workspaceStatusRequestMap["locked_by"] = d.Get("locked_by").(string)
+		hasWorkspaceStatus = true
+	}
+	if _, ok := d.GetOk("locked_time"); ok {
+		workspaceStatusRequestMap["locked_time"] = d.Get("locked_time").(string)
+		hasWorkspaceStatus = true
+	}
+	if hasWorkspaceStatus {
+		workspaceStatus := resourceIBMSchematicsWorkspaceMapToWorkspaceStatusRequest(workspaceStatusRequestMap)
 		createWorkspaceOptions.SetWorkspaceStatus(&workspaceStatus)
 	}
+
 	if _, ok := d.GetOk("x_github_token"); ok {
 		createWorkspaceOptions.SetXGithubToken(d.Get("x_github_token").(string))
 	}
@@ -851,30 +950,80 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 			templateDataItemMap := resourceIBMSchematicsWorkspaceTemplateSourceDataResponseToMap(templateDataItem)
 			templateData = append(templateData, templateDataItemMap)
 		}
-		if err = d.Set("template_data", templateData); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting template_data: %s", err))
+		if err = d.Set("template_env_settings", templateData[0]["env_values"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading env_values: %s", err))
 		}
+		if err = d.Set("template_git_folder", templateData[0]["folder"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading folder: %s", err))
+		}
+		if err = d.Set("template_init_state_file", templateData[0]["init_state_file"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading init_state_file: %s", err))
+		}
+		if err = d.Set("template_type", templateData[0]["type"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading type: %s", err))
+		}
+		if err = d.Set("template_uninstall_script_name", templateData[0]["uninstall_script_name"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading uninstall_script_name: %s", err))
+		}
+		if err = d.Set("template_values", templateData[0]["values"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading values: %s", err))
+		}
+		if err = d.Set("template_values_metadata", templateData[0]["values_metadata"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading values_metadata: %s", err))
+		}
+		if err = d.Set("template_inputs", templateData[0]["variablestore"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading variablestore: %s", err))
+		}
+
 	}
 	if err = d.Set("template_ref", workspaceResponse.TemplateRef); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting template_ref: %s", err))
 	}
-	if _, ok := d.GetOk("template_repo"); ok {
-		if workspaceResponse.TemplateRepo != nil {
-			templateRepoMap := resourceIBMSchematicsWorkspaceTemplateRepoResponseToMap(*workspaceResponse.TemplateRepo)
-			if err = d.Set("template_repo", []map[string]interface{}{templateRepoMap}); err != nil {
-				return diag.FromErr(fmt.Errorf("Error reading template_repo: %s", err))
-			}
+	if workspaceResponse.TemplateRepo != nil {
+		templateRepoMap := resourceIBMSchematicsWorkspaceTemplateRepoResponseToMap(*workspaceResponse.TemplateRepo)
+		if err = d.Set("template_git_branch", templateRepoMap["branch"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading branch: %s", err))
+		}
+		if err = d.Set("template_git_release", templateRepoMap["release"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading release: %s", err))
+		}
+		if err = d.Set("template_git_repo_sha_value", templateRepoMap["repo_sha_value"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading repo_sha_value: %s", err))
+		}
+		if err = d.Set("template_git_repo_url", templateRepoMap["repo_url"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading repo_url: %s", err))
+		}
+		if err = d.Set("template_git_url", templateRepoMap["url"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading url: %s", err))
+		}
+		if err = d.Set("template_git_has_uploadedgitrepotar", templateRepoMap["has_uploadedgitrepotar"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading has_uploadedgitrepotar: %s", err))
 		}
 	}
-	if workspaceResponse.Type != nil {
-		if err = d.Set("type", workspaceResponse.Type); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+	/*if workspaceResponse.Type != nil {
+		if err = d.Set("template_type", workspaceResponse.Type); err != nil {
+			return fmt.Errorf("Error reading type: %s", err)
 		}
-	}
+	}*/
 	if workspaceResponse.WorkspaceStatus != nil {
 		workspaceStatusMap := resourceIBMSchematicsWorkspaceWorkspaceStatusResponseToMap(*workspaceResponse.WorkspaceStatus)
-		if err = d.Set("workspace_status", []map[string]interface{}{workspaceStatusMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting workspace_status: %s", err))
+		if err = d.Set("frozen", workspaceStatusMap["frozen"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading frozen: %s", err))
+		}
+		if err = d.Set("frozen_at", workspaceStatusMap["frozen_at"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading frozen_at: %s", err))
+		}
+		if err = d.Set("frozen_by", workspaceStatusMap["frozen_by"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading frozen_by: %s", err))
+		}
+		if err = d.Set("locked", workspaceStatusMap["locked"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading locked: %s", err))
+		}
+		if err = d.Set("locked_by", workspaceStatusMap["locked_by"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading locked_by: %s", err))
+		}
+		if err = d.Set("locked_time", workspaceStatusMap["locked_time"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading locked_time: %s", err))
 		}
 	}
 	if workspaceResponse.CreatedAt != nil {
@@ -916,8 +1065,11 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 	}
 	if workspaceResponse.WorkspaceStatusMsg != nil {
 		workspaceStatusMsgMap := resourceIBMSchematicsWorkspaceWorkspaceStatusMessageToMap(*workspaceResponse.WorkspaceStatusMsg)
-		if err = d.Set("workspace_status_msg", []map[string]interface{}{workspaceStatusMsgMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting workspace_status_msg: %s", err))
+		if err = d.Set("status_code", workspaceStatusMsgMap["status_code"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading status_code: %s", err))
+		}
+		if err = d.Set("status_msg", workspaceStatusMsgMap["status_msg"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading status_msg: %s", err))
 		}
 	}
 
@@ -1206,27 +1358,117 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		updateWorkspaceOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 		hasChange = true
 	}
-	if d.HasChange("template_data") {
-		var templateData []schematicsv1.TemplateSourceDataRequest
-		for _, e := range d.Get("template_data").([]interface{}) {
-			value := e.(map[string]interface{})
-			templateDataItem := resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(value)
-			templateData = append(templateData, templateDataItem)
-		}
+
+	var templateData []schematicsv1.TemplateSourceDataRequest
+
+	templateSourceDataRequestMap := map[string]interface{}{}
+	hasTemplateData := false
+
+	if d.HasChange("template_env_settings") {
+		templateSourceDataRequestMap["env_values"] = d.Get("template_env_settings").([]interface{})
+		hasTemplateData = true
+	}
+	if d.HasChange("template_git_folder") {
+		templateSourceDataRequestMap["folder"] = d.Get("template_git_folder").(string)
+		hasTemplateData = true
+	}
+	if d.HasChange("template_init_state_file") {
+		templateSourceDataRequestMap["init_state_file"] = d.Get("template_init_state_file").(string)
+		hasTemplateData = true
+	}
+	if d.HasChange("template_type") {
+		templateSourceDataRequestMap["type"] = d.Get("template_type").(string)
+		updateWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
+		hasTemplateData = true
+	}
+	if d.HasChange("template_uninstall_script_name") {
+		templateSourceDataRequestMap["uninstall_script_name"] = d.Get("template_uninstall_script_name").(string)
+		hasTemplateData = true
+	}
+	if d.HasChange("template_values") {
+		templateSourceDataRequestMap["values"] = d.Get("template_values").(string)
+		hasTemplateData = true
+	}
+	if d.HasChange("template_values_metadata") {
+		templateSourceDataRequestMap["values_metadata"] = d.Get("template_values_metadata").([]interface{})
+		hasTemplateData = true
+	}
+	if d.HasChange("template_inputs") {
+		templateSourceDataRequestMap["variablestore"] = d.Get("template_inputs").([]interface{})
+		hasTemplateData = true
+	}
+	if hasTemplateData {
+		templateDataItem := resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSourceDataRequestMap)
+		templateData = append(templateData, templateDataItem)
 		updateWorkspaceOptions.SetTemplateData(templateData)
 		hasChange = true
 	}
-	if d.HasChange("template_repo") {
-		templateRepo := resourceIBMSchematicsWorkspaceMapToTemplateRepoUpdateRequest(d.Get("template_repo.0").(map[string]interface{}))
+
+	templateRepoRequestMap := map[string]interface{}{}
+	hasTemplateRepo := false
+	if d.HasChange("template_git_branch") {
+		templateRepoRequestMap["branch"] = d.Get("template_git_branch").(bool)
+		hasTemplateRepo = true
+	}
+	if d.HasChange("template_git_release") {
+		templateRepoRequestMap["release"] = d.Get("template_git_release").(string)
+		hasTemplateRepo = true
+	}
+	if d.HasChange("template_git_repo_sha_value") {
+		templateRepoRequestMap["repo_sha_value"] = d.Get("template_git_repo_sha_value").(string)
+		hasTemplateRepo = true
+	}
+	if d.HasChange("template_git_repo_url") {
+		templateRepoRequestMap["repo_url"] = d.Get("template_git_repo_url").(string)
+		hasTemplateRepo = true
+	}
+	if d.HasChange("template_git_url") {
+		templateRepoRequestMap["url"] = d.Get("template_git_url").(string)
+		hasTemplateRepo = true
+	}
+	if d.HasChange("template_git_has_uploadedgitrepotar") {
+		templateRepoRequestMap["has_uploadedgitrepotar"] = d.Get("template_git_has_uploadedgitrepotar").(string)
+		hasTemplateRepo = true
+	}
+	if hasTemplateRepo {
+		templateRepo := resourceIBMSchematicsWorkspaceMapToTemplateRepoUpdateRequest(templateRepoRequestMap)
 		updateWorkspaceOptions.SetTemplateRepo(&templateRepo)
 		hasChange = true
 	}
-	if d.HasChange("type") {
-		updateWorkspaceOptions.SetType(expandStringList(d.Get("type").([]interface{})))
+
+	if d.HasChange("template_type") {
+		updateWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
 		hasChange = true
 	}
-	if d.HasChange("workspace_status") {
-		workspaceStatus := resourceIBMSchematicsWorkspaceMapToWorkspaceStatusUpdateRequest(d.Get("workspace_status.0").(map[string]interface{}))
+
+	workspaceStatusRequestMap := map[string]interface{}{}
+	workspaceStatus := false
+	if d.HasChange("frozen") {
+		workspaceStatusRequestMap["frozen"] = d.Get("frozen").(bool)
+		workspaceStatus = true
+	}
+	if d.HasChange("frozen_at") {
+		workspaceStatusRequestMap["frozen_at"] = d.Get("frozen_at").(string)
+		workspaceStatus = true
+	}
+	if d.HasChange("frozen_by") {
+		workspaceStatusRequestMap["frozen_by"] = d.Get("frozen_by").(string)
+		workspaceStatus = true
+	}
+	if d.HasChange("locked") {
+		workspaceStatusRequestMap["locked"] = d.Get("locked").(bool)
+		workspaceStatus = true
+	}
+	if d.HasChange("locked_by") {
+		workspaceStatusRequestMap["locked_by"] = d.Get("locked_by").(string)
+		workspaceStatus = true
+	}
+	if d.HasChange("locked_time") {
+		workspaceStatusRequestMap["locked_time"] = d.Get("locked_time").(string)
+		workspaceStatus = true
+	}
+	if workspaceStatus {
+		workspaceStatus := resourceIBMSchematicsWorkspaceMapToWorkspaceStatusUpdateRequest(workspaceStatusRequestMap)
 		updateWorkspaceOptions.SetWorkspaceStatus(&workspaceStatus)
 		hasChange = true
 	}
