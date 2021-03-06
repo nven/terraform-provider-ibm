@@ -55,7 +55,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "CatalogRef -.",
+				Description: "Information about the software template that you chose from the IBM Cloud catalog. This information is returned for IBM Cloud catalog offerings only.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"dry_run": &schema.Schema{
@@ -66,37 +66,37 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"item_icon_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Catalog item icon url.",
+							Description: "The URL to the icon of the software template in the IBM Cloud catalog.",
 						},
 						"item_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Catalog item id.",
+							Description: "The ID of the software template that you chose to install from the IBM Cloud catalog. This software is provisioned with Schematics.",
 						},
 						"item_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Catalog item name.",
+							Description: "The name of the software that you chose to install from the IBM Cloud catalog.",
 						},
 						"item_readme_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Catalog item readme url.",
+							Description: "The URL to the readme file of the software template in the IBM Cloud catalog.",
 						},
 						"item_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Catalog item url.",
+							Description: "The URL to the software template in the IBM Cloud catalog.",
 						},
 						"launch_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Catalog item launch url.",
+							Description: "The URL to the dashboard to access your software.",
 						},
 						"offering_version": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Catalog item offering version.",
+							Description: "The version of the software template that you chose to install from the IBM Cloud catalog.",
 						},
 					},
 				},
@@ -104,30 +104,30 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"description": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "Workspace description.",
+				Description:  "The description of the workspace.",
 				ValidateFunc: InvokeValidator("ibm_schematics_workspace", schematicsWorkspaceDescription),
 			},
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Workspace location.",
+				Description: "The location where you want to create your Schematics workspace and run Schematics actions. The location that you enter must match the API endpoint that you use. For example, if you use the Frankfurt API endpoint, you must specify `eu-de` as your location. If you use an API endpoint for a geography and you do not specify a location, Schematics determines the location based on availability.",
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Workspace name.",
+				Description:  "The name of your workspace. The name can be up to 128 characters long and can include alphanumeric characters, spaces, dashes, and underscores. When you create a workspace for your own Terraform template, consider including the microservice component that you set up with your Terraform template and the IBM Cloud environment where you want to deploy your resources in your name.",
 				ValidateFunc: InvokeValidator("ibm_schematics_workspace", schematicsWorkspaceName),
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Workspace resource group.",
+				Description: "The ID of the resource group where you want to provision the workspace.",
 			},
 			"shared_data": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "SharedTargetData -.",
+				Description: "Information that is shared across templates in IBM Cloud catalog offerings. This information is not provided when you create a workspace from your own Terraform template.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cluster_created_on": &schema.Schema{
@@ -138,7 +138,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"cluster_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Cluster id.",
+							Description: "The ID of the cluster where you want to provision the resources of all IBM Cloud catalog templates that are included in the catalog offering.",
 						},
 						"cluster_name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -153,23 +153,23 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"entitlement_keys": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "Entitlement keys.",
+							Description: "The entitlement key that you want to use to install IBM Cloud entitled software.",
 							Elem:        &schema.Schema{Type: schema.TypeMap},
 						},
 						"namespace": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Target namespace.",
+							Description: "The Kubernetes namespace or OpenShift project where the resources of all IBM Cloud catalog templates that are included in the catalog offering are deployed into.",
 						},
 						"region": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Target region.",
+							Description: "The IBM Cloud region that you want to use for the resources of all IBM Cloud catalog templates that are included in the catalog offering.",
 						},
 						"resource_group_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Target resource group id.",
+							Description: "The ID of the resource group that you want to use for the resources of all IBM Cloud catalog templates that are included in the catalog offering.",
 						},
 						"worker_count": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -187,29 +187,29 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Workspace tags.",
+				Description: "A list of tags that are associated with the workspace.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"template_env_settings": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "EnvVariableRequest ..",
+				Description: "A list of environment variables that you want to apply during the execution of a bash script or Terraform action. This field must be provided as a list of key-value pairs, for example, **TF_LOG=debug**. Each entry will be a map with one entry where `key is the environment variable name and value is value`. You can define environment variables for IBM Cloud catalog offerings that are provisioned by using a bash script.",
 				Elem:        &schema.Schema{Type: schema.TypeMap},
 			},
 			"template_git_folder": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Folder name.",
+				Description: "The subfolder in your GitHub or GitLab repository where your Terraform template is stored.",
 			},
 			"template_init_state_file": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Init state file.",
+				Description: "The content of an existing Terraform statefile that you want to import in to your workspace. To get the content of a Terraform statefile for a specific Terraform template in an existing workspace, run `ibmcloud terraform state pull --id <workspace_id> --template <template_id>`.",
 			},
 			"template_type": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Template type.",
+				Description:  "The Terraform version that you want to use to run your Terraform code. Enter `terraform_v0.12` to use Terraform version 0.12, and `terraform_v0.11` to use Terraform version 0.11. If no value is specified, the Terraform config files are run with Terraform version 0.11. Make sure that your Terraform config files are compatible with the Terraform version that you select.",
 				ValidateFunc: InvokeValidator("ibm_schematics_workspace", schematicsWorkspaceTemplateType),
 			},
 			"template_uninstall_script_name": &schema.Schema{
@@ -220,7 +220,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"template_values": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Value.",
+				Description: "A list of variable values that you want to apply during the Helm chart installation. The list must be provided in JSON format, such as `\"autoscaling:  enabled: true  minReplicas: 2\"`. The values that you define here override the default Helm chart values. This field is supported only for IBM Cloud catalog offerings that are provisioned by using the Terraform Helm provider.",
 			},
 			"template_values_metadata": &schema.Schema{
 				Type:        schema.TypeList,
@@ -238,22 +238,22 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Variable description.",
+							Description: "The description of your input variable.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Variable name.",
+							Description: "The name of the variable.",
 						},
 						"secure": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "Variable is secure.",
+							Description: "If set to `true`, the value of your input variable is protected and not returned in your API response.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Variable type.",
+							Description: "`Terraform v0.11` supports `string`, `list`, `map` data type. For more information, about the syntax, see [Configuring input variables](https://www.terraform.io/docs/configuration-0-11/variables.html). <br> `Terraform v0.12` additionally, supports `bool`, `number` and complex data types such as `list(type)`, `map(type)`, `object({attribute name=type,..})`, `set(type)`, `tuple([type])`. For more information, about the syntax to use the complex data type, see [Configuring variables](https://www.terraform.io/docs/configuration/variables.html#type-constraints).",
 						},
 						"use_default": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -263,7 +263,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Value of the Variable.",
+							Description: "Enter the value as a string for the primitive types such as `bool`, `number`, `string`, and `HCL` format for the complex variables, as you provide in a `.tfvars` file. **You need to enter escaped string of `HCL` format for the complex variable value**. For more information, about how to declare variables in a terraform configuration file and provide value to schematics, see [Providing values for the declared variables](/docs/schematics?topic=schematics-create-tf-config#declare-variable).",
 						},
 					},
 				},
@@ -276,12 +276,12 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"template_git_branch": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Repo branch.",
+				Description: "The branch in GitHub where your Terraform template is stored.",
 			},
 			"template_git_release": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Repo release.",
+				Description: "The release tag in GitHub of your Terraform template.",
 			},
 			"template_git_repo_sha_value": &schema.Schema{
 				Type:        schema.TypeString,
@@ -291,12 +291,12 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"template_git_repo_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Repo URL.",
+				Description: "The URL to the repository where the IBM Cloud catalog software template is stored.",
 			},
 			"template_git_url": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "Source URL.",
+				Description:  "The URL to the GitHub or GitLab repository where your Terraform and public bit bucket template is stored. For more information of the environment variable syntax, see [Create workspace new](/docs/schematics?topic=schematics-schematics-cli-reference#schematics-workspace-new).",
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 			},
 			"template_git_has_uploadedgitrepotar": &schema.Schema{
@@ -314,50 +314,50 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"frozen": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Frozen status.",
+				Description: "If set to true, the workspace is frozen and changes to the workspace are disabled.",
 			},
 			"frozen_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Frozen at.",
+				Description: "The timestamp when the workspace was frozen.",
 			},
 			"frozen_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Frozen by.",
+				Description: "The user ID that froze the workspace.",
 			},
 			"locked": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,
-				Description: "Locked status.",
+				Description: "If set to true, the workspace is locked and disabled for changes.",
 			},
 			"locked_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Locked by.",
+				Description: "The user ID that initiated a resource-related action, such as applying or destroying resources, that locked the workspace.",
 			},
 			"locked_time": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Locked at.",
+				Description: "The timestamp when the workspace was locked.",
 			},
 			"x_github_token": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The github token associated with the GIT. Required for cloning of repo.",
+				Description: "The personal access token to authenticate with your private GitHub or GitLab repository and access your Terraform template.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace created at.",
+				Description: "The timestamp when the workspace was created.",
 			},
 			"created_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace created by.",
+				Description: "The user ID that created the workspace.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -367,38 +367,38 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"last_health_check_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Last health checked at.",
+				Description: "The timestamp when the last health check was performed by Schematics.",
 			},
 			"runtime_data": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Workspace runtime data.",
+				Description: "Information about the provisioning engine, state file, and runtime logs.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"engine_cmd": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Engine command.",
+							Description: "The command that was used to apply the Terraform template or IBM Cloud catalog software template.",
 						},
 						"engine_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Engine name.",
+							Description: "The provisioning engine that was used to apply the Terraform template or IBM Cloud catalog software template.",
 						},
 						"engine_version": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Engine version.",
+							Description: "The version of the provisioning engine that was used.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Template id.",
+							Description: "The ID that was assigned to your Terraform template or IBM Cloud catalog software template.",
 						},
 						"log_store_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Log store url.",
+							Description: "The URL to access the logs that were created during the creation, update, or deletion of your IBM Cloud resources.",
 						},
 						"output_values": &schema.Schema{
 							Type:        schema.TypeList,
@@ -415,7 +415,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"state_store_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "State store URL.",
+							Description: "The URL where the Terraform statefile (`terraform.tfstate`) is stored. You can use the statefile to find an overview of IBM Cloud resources that were created by Schematics. Schematics uses the statefile as an inventory list to determine future create, update, or deletion actions.",
 						},
 					},
 				},
@@ -423,27 +423,27 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace status type.",
+				Description: "The status of the workspace.  **Active**: After you successfully ran your infrastructure code by applying your Terraform execution plan, the state of your workspace changes to `Active`.  **Connecting**: Schematics tries to connect to the template in your source repo. If successfully connected, the template is downloaded and metadata, such as input parameters, is extracted. After the template is downloaded, the state of the workspace changes to `Scanning`.  **Draft**: The workspace is created without a reference to a GitHub or GitLab repository.  **Failed**: If errors occur during the execution of your infrastructure code in IBM Cloud Schematics, your workspace status is set to `Failed`.  **Inactive**: The Terraform template was scanned successfully and the workspace creation is complete. You can now start running Schematics plan and apply actions to provision the IBM Cloud resources that you specified in your template. If you have an `Active` workspace and decide to remove all your resources, your workspace is set to `Inactive` after all your resources are removed.  **In progress**: When you instruct IBM Cloud Schematics to run your infrastructure code by applying your Terraform execution plan, the status of our workspace changes to `In progress`.  **Scanning**: The download of the Terraform template is complete and vulnerability scanning started. If the scan is successful, the workspace state changes to `Inactive`. If errors in your template are found, the state changes to `Template Error`.  **Stopped**: The Schematics plan, apply, or destroy action was cancelled manually.  **Template Error**: The Schematics template contains errors and cannot be processed.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace updated at.",
+				Description: "The timestamp when the workspace was last updated.",
 			},
 			"updated_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace updated by.",
+				Description: "The user ID that updated the workspace.",
 			},
 			"status_code": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Status code.",
+				Description: "The success or error code that was returned for the last plan, apply, or destroy action that ran against your workspace.",
 			},
 			"status_msg": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Status message.",
+				Description: "The success or error message that was returned for the last plan, apply, or destroy action that ran against your workspace.",
 			},
 		},
 	}

@@ -38,12 +38,12 @@ func dataSourceIBMSchematicsState() *schema.Resource {
 			"workspace_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The workspace ID for the workspace that you want to query.  You can run the GET /workspaces call if you need to look up the  workspace IDs in your IBM Cloud account.",
+				Description: "The ID of the workspace for which you want to retrieve the Terraform statefile. To find the workspace ID, use the `GET /v1/workspaces` API.",
 			},
 			"template_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The Template ID for which you want to get the values.  Use the GET /workspaces to look up the workspace IDs  or template IDs in your IBM Cloud account.",
+				Description: "The ID of the Terraform template for which you want to retrieve the Terraform statefile. When you create a workspace, the Terraform template that your workspace points to is assigned a unique ID. To find this ID, use the `GET /v1/workspaces` API and review the `template_data.id` value.",
 			},
 			"state_store": &schema.Schema{
 				Type:     schema.TypeString,
