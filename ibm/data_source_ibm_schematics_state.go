@@ -53,6 +53,11 @@ func dataSourceIBMSchematicsState() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this workspace",
+			},
 		},
 	}
 }
@@ -95,6 +100,12 @@ func dataSourceIBMSchematicsStateRead(context context.Context, d *schema.Resourc
 
 	stateStoreJSON := string(stateByte[:])
 	d.Set("state_store_json", stateStoreJSON)
+
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.Set(ResourceControllerURL, controller+"/schematics")
 
 	return nil
 }
