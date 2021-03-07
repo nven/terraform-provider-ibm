@@ -384,6 +384,11 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 				Computed:    true,
 				Description: "The user ID that updated the workspace.",
 			},
+			"is_frozen": {
+				Type:       schema.TypeBool,
+				Computed:   true,
+				Deprecated: "use frozen instead",
+			},
 			"frozen": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -398,6 +403,12 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The user ID that froze the workspace.",
+			},
+			"is_locked": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "If set to true, the workspace is locked and disabled for changes.",
+				Deprecated:  "Use locked instead",
 			},
 			"locked": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -423,6 +434,11 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The success or error message that was returned for the last plan, apply, or destroy action that ran against your workspace.",
+			},
+			ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this workspace",
 			},
 		},
 	}
@@ -570,6 +586,9 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 
 	if workspaceResponse.WorkspaceStatus != nil {
 		workspaceStatusMap := dataSourceWorkspaceResponseFlattenWorkspaceStatus(*workspaceResponse.WorkspaceStatus)
+		if err = d.Set("is_frozen", workspaceStatusMap[0]["frozen"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading frozen: %s", err))
+		}
 		if err = d.Set("frozen", workspaceStatusMap[0]["frozen"]); err != nil {
 			return diag.FromErr(fmt.Errorf("Error reading frozen: %s", err))
 		}
@@ -578,6 +597,9 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 		}
 		if err = d.Set("frozen_by", workspaceStatusMap[0]["frozen_by"]); err != nil {
 			return diag.FromErr(fmt.Errorf("Error reading frozen_by: %s", err))
+		}
+		if err = d.Set("is_locked", workspaceStatusMap[0]["locked"]); err != nil {
+			return diag.FromErr(fmt.Errorf("Error reading locked: %s", err))
 		}
 		if err = d.Set("locked", workspaceStatusMap[0]["locked"]); err != nil {
 			return diag.FromErr(fmt.Errorf("Error reading locked: %s", err))
@@ -599,6 +621,12 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 			return diag.FromErr(fmt.Errorf("Error reading status_msg: %s", err))
 		}
 	}
+
+	controller, err := getBaseController(meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.Set(ResourceControllerURL, controller+"/schematics")
 
 	return nil
 }
@@ -642,7 +670,6 @@ func dataSourceWorkspaceResponseCatalogRefToMap(catalogRefItem schematicsv1.Cata
 	return catalogRefMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenRuntimeData(result []schematicsv1.TemplateRunTimeDataResponse) (runtimeData []map[string]interface{}) {
 	for _, runtimeDataItem := range result {
 		runtimeData = append(runtimeData, dataSourceWorkspaceResponseRuntimeDataToMap(runtimeDataItem))
@@ -682,7 +709,6 @@ func dataSourceWorkspaceResponseRuntimeDataToMap(runtimeDataItem schematicsv1.Te
 	return runtimeDataMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenSharedData(result schematicsv1.SharedTargetDataResponse) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceWorkspaceResponseSharedDataToMap(result)
@@ -716,7 +742,6 @@ func dataSourceWorkspaceResponseSharedDataToMap(sharedDataItem schematicsv1.Shar
 	return sharedDataMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenTemplateData(result []schematicsv1.TemplateSourceDataResponse) (templateData []map[string]interface{}) {
 	for _, templateDataItem := range result {
 		templateData = append(templateData, dataSourceWorkspaceResponseTemplateDataToMap(templateDataItem))
@@ -728,7 +753,6 @@ func dataSourceWorkspaceResponseFlattenTemplateData(result []schematicsv1.Templa
 func dataSourceWorkspaceResponseTemplateDataToMap(templateDataItem schematicsv1.TemplateSourceDataResponse) (templateDataMap map[string]interface{}) {
 	templateDataMap = map[string]interface{}{}
 
-	
 	if templateDataItem.EnvValues != nil {
 		envValuesList := []map[string]interface{}{}
 		for _, envValuesItem := range templateDataItem.EnvValues {
@@ -790,7 +814,6 @@ func dataSourceWorkspaceResponseTemplateDataEnvValuesToMap(envValuesItem schemat
 	return envValuesMap
 }
 
-
 func dataSourceWorkspaceResponseTemplateDataVariablestoreToMap(variablestoreItem schematicsv1.WorkspaceVariableResponse) (variablestoreMap map[string]interface{}) {
 	variablestoreMap = map[string]interface{}{}
 
@@ -812,8 +835,6 @@ func dataSourceWorkspaceResponseTemplateDataVariablestoreToMap(variablestoreItem
 
 	return variablestoreMap
 }
-
-
 
 func dataSourceWorkspaceResponseFlattenTemplateRepo(result schematicsv1.TemplateRepoResponse) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
@@ -851,7 +872,6 @@ func dataSourceWorkspaceResponseTemplateRepoToMap(templateRepoItem schematicsv1.
 	return templateRepoMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenWorkspaceStatus(result schematicsv1.WorkspaceStatusResponse) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceWorkspaceResponseWorkspaceStatusToMap(result)
@@ -885,7 +905,6 @@ func dataSourceWorkspaceResponseWorkspaceStatusToMap(workspaceStatusItem schemat
 	return workspaceStatusMap
 }
 
-
 func dataSourceWorkspaceResponseFlattenWorkspaceStatusMsg(result schematicsv1.WorkspaceStatusMessage) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceWorkspaceResponseWorkspaceStatusMsgToMap(result)
@@ -906,4 +925,3 @@ func dataSourceWorkspaceResponseWorkspaceStatusMsgToMap(workspaceStatusMsgItem s
 
 	return workspaceStatusMsgMap
 }
-
