@@ -83,7 +83,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						},
 						"metadata": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "User editable metadata for the variables.",
 							Elem: &schema.Resource{
@@ -203,7 +202,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						},
 						"metadata": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "User editable metadata for the variables.",
 							Elem: &schema.Resource{
@@ -365,14 +363,12 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			},
 			"status": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "Job Status.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"action_job_status": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "Action Job Status.",
 							Elem: &schema.Resource{
@@ -425,7 +421,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			},
 			"data": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "Job data.",
 				Elem: &schema.Resource{
@@ -437,7 +432,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						},
 						"action_job_data": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "Action Job data.",
 							Elem: &schema.Resource{
@@ -465,7 +459,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 												},
 												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
 													Computed:    true,
 													Description: "User editable metadata for the variables.",
 													Elem: &schema.Resource{
@@ -585,7 +578,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 												},
 												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
 													Computed:    true,
 													Description: "User editable metadata for the variables.",
 													Elem: &schema.Resource{
@@ -705,7 +697,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 												},
 												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
 													Computed:    true,
 													Description: "User editable metadata for the variables.",
 													Elem: &schema.Resource{
@@ -825,7 +816,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			},
 			"bastion": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "Complete Target details with user inputs and system generated data.",
 				Elem: &schema.Resource{
@@ -882,7 +872,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						},
 						"sys_lock": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "System lock status.",
 							Elem: &schema.Resource{
@@ -918,7 +907,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			},
 			"log_summary": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "Job log summary record.",
 				Elem: &schema.Resource{
@@ -974,7 +962,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						},
 						"repo_download_job": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "Repo download Job log summary.",
 							Elem: &schema.Resource{
@@ -1009,7 +996,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						},
 						"action_job": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "Flow Job log summary.",
 							Elem: &schema.Resource{
@@ -1031,7 +1017,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 									},
 									"recap": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
 										Computed:    true,
 										Description: "Recap records.",
 										Elem: &schema.Resource{
@@ -1166,17 +1151,23 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("resource_group", job.ResourceGroup); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
 	}
-	if err = d.Set("submitted_at", job.SubmittedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting submitted_at: %s", err))
+	if job.SubmittedAt != nil {
+		if err = d.Set("submitted_at", job.SubmittedAt.String()); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting submitted_at: %s", err))
+		}
 	}
 	if err = d.Set("submitted_by", job.SubmittedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting submitted_by: %s", err))
 	}
-	if err = d.Set("start_at", job.StartAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting start_at: %s", err))
+	if job.StartAt != nil {
+		if err = d.Set("start_at", job.StartAt.String()); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting start_at: %s", err))
+		}
 	}
-	if err = d.Set("end_at", job.EndAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting end_at: %s", err))
+	if job.EndAt != nil {
+		if err = d.Set("end_at", job.EndAt.String()); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting end_at: %s", err))
+		}
 	}
 	if err = d.Set("duration", job.Duration); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting duration: %s", err))
@@ -1221,8 +1212,10 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("results_url", job.ResultsURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting results_url: %s", err))
 	}
-	if err = d.Set("updated_at", job.UpdatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	if job.UpdatedAt != nil {
+		if err = d.Set("updated_at", job.UpdatedAt.String()); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
 	}
 
 	return nil
@@ -1313,7 +1306,60 @@ func dataSourceJobInputsMetadataToMap(metadataItem schematicsv1.VariableMetadata
 	return metadataMap
 }
 
+func dataSourceJobOutputsMetadataToMap(metadataItem schematicsv1.VariableMetadata) (metadataMap map[string]interface{}) {
+	metadataMap = map[string]interface{}{}
 
+	if metadataItem.Type != nil {
+		metadataMap["type"] = metadataItem.Type
+	}
+	if metadataItem.Aliases != nil {
+		metadataMap["aliases"] = metadataItem.Aliases
+	}
+	if metadataItem.Description != nil {
+		metadataMap["description"] = metadataItem.Description
+	}
+	if metadataItem.DefaultValue != nil {
+		metadataMap["default_value"] = metadataItem.DefaultValue
+	}
+	if metadataItem.Secure != nil {
+		metadataMap["secure"] = metadataItem.Secure
+	}
+	if metadataItem.Immutable != nil {
+		metadataMap["immutable"] = metadataItem.Immutable
+	}
+	if metadataItem.Hidden != nil {
+		metadataMap["hidden"] = metadataItem.Hidden
+	}
+	if metadataItem.Options != nil {
+		metadataMap["options"] = metadataItem.Options
+	}
+	if metadataItem.MinValue != nil {
+		metadataMap["min_value"] = metadataItem.MinValue
+	}
+	if metadataItem.MaxValue != nil {
+		metadataMap["max_value"] = metadataItem.MaxValue
+	}
+	if metadataItem.MinLength != nil {
+		metadataMap["min_length"] = metadataItem.MinLength
+	}
+	if metadataItem.MaxLength != nil {
+		metadataMap["max_length"] = metadataItem.MaxLength
+	}
+	if metadataItem.Matches != nil {
+		metadataMap["matches"] = metadataItem.Matches
+	}
+	if metadataItem.Position != nil {
+		metadataMap["position"] = metadataItem.Position
+	}
+	if metadataItem.GroupBy != nil {
+		metadataMap["group_by"] = metadataItem.GroupBy
+	}
+	if metadataItem.Source != nil {
+		metadataMap["source"] = metadataItem.Source
+	}
+
+	return metadataMap
+}
 
 func dataSourceJobFlattenSettings(result []schematicsv1.VariableData) (settings []map[string]interface{}) {
 	for _, settingsItem := range result {
@@ -1400,8 +1446,6 @@ func dataSourceJobSettingsMetadataToMap(metadataItem schematicsv1.VariableMetada
 	return metadataMap
 }
 
-
-
 func dataSourceJobFlattenStatus(result schematicsv1.JobStatus) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceJobStatusToMap(result)
@@ -1453,8 +1497,6 @@ func dataSourceJobStatusActionJobStatusToMap(actionJobStatusItem schematicsv1.Jo
 
 	return actionJobStatusMap
 }
-
-
 
 func dataSourceJobFlattenData(result schematicsv1.JobData) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
@@ -1536,7 +1578,6 @@ func dataSourceJobActionJobDataInputsToMap(inputsItem schematicsv1.VariableData)
 	return inputsMap
 }
 
-
 func dataSourceJobActionJobDataOutputsToMap(outputsItem schematicsv1.VariableData) (outputsMap map[string]interface{}) {
 	outputsMap = map[string]interface{}{}
 
@@ -1559,7 +1600,6 @@ func dataSourceJobActionJobDataOutputsToMap(outputsItem schematicsv1.VariableDat
 	return outputsMap
 }
 
-
 func dataSourceJobActionJobDataSettingsToMap(settingsItem schematicsv1.VariableData) (settingsMap map[string]interface{}) {
 	settingsMap = map[string]interface{}{}
 
@@ -1581,9 +1621,6 @@ func dataSourceJobActionJobDataSettingsToMap(settingsItem schematicsv1.VariableD
 
 	return settingsMap
 }
-
-
-
 
 func dataSourceJobFlattenBastion(result schematicsv1.TargetResourceset) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
@@ -1655,8 +1692,6 @@ func dataSourceJobBastionSysLockToMap(sysLockItem schematicsv1.SystemLock) (sysL
 	return sysLockMap
 }
 
-
-
 func dataSourceJobFlattenLogSummary(result schematicsv1.JobLogSummary) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceJobLogSummaryToMap(result)
@@ -1722,7 +1757,6 @@ func dataSourceJobLogSummaryLogErrorsToMap(logErrorsItem schematicsv1.JobLogSumm
 	return logErrorsMap
 }
 
-
 func dataSourceJobLogSummaryRepoDownloadJobToMap(repoDownloadJobItem schematicsv1.JobLogSummaryRepoDownloadJob) (repoDownloadJobMap map[string]interface{}) {
 	repoDownloadJobMap = map[string]interface{}{}
 
@@ -1744,7 +1778,6 @@ func dataSourceJobLogSummaryRepoDownloadJobToMap(repoDownloadJobItem schematicsv
 
 	return repoDownloadJobMap
 }
-
 
 func dataSourceJobLogSummaryActionJobToMap(actionJobItem schematicsv1.JobLogSummaryActionJob) (actionJobMap map[string]interface{}) {
 	actionJobMap = map[string]interface{}{}
@@ -1792,6 +1825,3 @@ func dataSourceJobActionJobRecapToMap(recapItem schematicsv1.JobLogSummaryAction
 
 	return recapMap
 }
-
-
-

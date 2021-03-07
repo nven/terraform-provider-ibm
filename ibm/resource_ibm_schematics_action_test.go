@@ -43,8 +43,7 @@ func TestAccIBMSchematicsActionBasic(t *testing.T) {
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMSchematicsActionConfigBasic(),
-				Check: resource.ComposeAggregateTestCheckFunc(
-				),
+				Check:  resource.ComposeAggregateTestCheckFunc(),
 			},
 		},
 	})
@@ -123,7 +122,7 @@ func testAccCheckIBMSchematicsActionConfigBasic() string {
 
 		resource "ibm_schematics_action" "schematics_action" {
 		}
-	`, )
+	`)
 }
 
 func testAccCheckIBMSchematicsActionConfig(name string, description string, location string, resourceGroup string, sourceReadmeURL string, sourceType string, commandParameter string, targetsIni string, triggerRecordID string, xGithubToken string) string {

@@ -67,7 +67,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			},
 			"user_state": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "User defined status of the Schematics object.",
 				Elem: &schema.Resource{
@@ -97,7 +96,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			},
 			"source": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "Source of templates, playbooks, or controls.",
 				Elem: &schema.Resource{
@@ -109,7 +107,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 						},
 						"git": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "Connection details to Git source.",
 							Elem: &schema.Resource{
@@ -157,7 +154,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			},
 			"bastion": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "Complete Target details with user inputs and system generated data.",
 				Elem: &schema.Resource{
@@ -214,7 +210,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 						},
 						"sys_lock": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "System lock status.",
 							Elem: &schema.Resource{
@@ -271,7 +266,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 						},
 						"metadata": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "User editable metadata for the variables.",
 							Elem: &schema.Resource{
@@ -391,7 +385,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 						},
 						"metadata": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "User editable metadata for the variables.",
 							Elem: &schema.Resource{
@@ -511,7 +504,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 						},
 						"metadata": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "User editable metadata for the variables.",
 							Elem: &schema.Resource{
@@ -631,7 +623,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 						},
 						"metadata": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "User editable metadata for the variables.",
 							Elem: &schema.Resource{
@@ -800,7 +791,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			},
 			"state": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "Computed state of the Action.",
 				Elem: &schema.Resource{
@@ -833,7 +823,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			},
 			"sys_lock": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "System lock status.",
 				Elem: &schema.Resource{
@@ -959,32 +948,40 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if err = d.Set("id", action.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
-	if err = d.Set("crn", action.CRN); err != nil {
+	if err = d.Set("crn", action.Crn); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
 	if err = d.Set("account", action.Account); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting account: %s", err))
 	}
-	if err = d.Set("source_created_at", action.SourceCreatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting source_created_at: %s", err))
+	if action.SourceCreatedAt != nil {
+		if err = d.Set("source_created_at", action.SourceCreatedAt.String()); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting source_created_at: %s", err))
+		}
 	}
 	if err = d.Set("source_created_by", action.SourceCreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting source_created_by: %s", err))
 	}
-	if err = d.Set("source_updated_at", action.SourceUpdatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting source_updated_at: %s", err))
+	if action.SourceUpdatedAt != nil {
+		if err = d.Set("source_updated_at", action.SourceUpdatedAt.String()); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting source_updated_at: %s", err))
+		}
 	}
 	if err = d.Set("source_updated_by", action.SourceUpdatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting source_updated_by: %s", err))
 	}
-	if err = d.Set("created_at", action.CreatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+	if action.CreatedAt != nil {
+		if err = d.Set("created_at", action.CreatedAt.String()); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		}
 	}
 	if err = d.Set("created_by", action.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("updated_at", action.UpdatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	if action.UpdatedAt != nil {
+		if err = d.Set("updated_at", action.UpdatedAt.String()); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
 	}
 	if err = d.Set("updated_by", action.UpdatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
@@ -999,8 +996,11 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf("Error setting state %s", err))
 		}
 	}
-	if err = d.Set("playbook_names", action.PlaybookNames); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting playbook_names: %s", err))
+
+	if action.PlaybookNames != nil {
+		if err = d.Set("playbook_names", action.PlaybookNames); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting playbook_names: %s", err))
+		}
 	}
 
 	if action.SysLock != nil {
@@ -1036,7 +1036,6 @@ func dataSourceActionUserStateToMap(userStateItem schematicsv1.UserState) (userS
 
 	return userStateMap
 }
-
 
 func dataSourceActionFlattenSource(result schematicsv1.ExternalSource) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
@@ -1083,8 +1082,6 @@ func dataSourceActionSourceGitToMap(gitItem schematicsv1.ExternalSourceGit) (git
 
 	return gitMap
 }
-
-
 
 func dataSourceActionFlattenBastion(result schematicsv1.TargetResourceset) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
@@ -1155,8 +1152,6 @@ func dataSourceActionBastionSysLockToMap(sysLockItem schematicsv1.SystemLock) (s
 
 	return sysLockMap
 }
-
-
 
 func dataSourceActionFlattenCredentials(result []schematicsv1.VariableData) (credentials []map[string]interface{}) {
 	for _, credentialsItem := range result {
@@ -1243,8 +1238,6 @@ func dataSourceActionCredentialsMetadataToMap(metadataItem schematicsv1.Variable
 	return metadataMap
 }
 
-
-
 func dataSourceActionFlattenInputs(result []schematicsv1.VariableData) (inputs []map[string]interface{}) {
 	for _, inputsItem := range result {
 		inputs = append(inputs, dataSourceActionInputsToMap(inputsItem))
@@ -1329,8 +1322,6 @@ func dataSourceActionInputsMetadataToMap(metadataItem schematicsv1.VariableMetad
 
 	return metadataMap
 }
-
-
 
 func dataSourceActionFlattenOutputs(result []schematicsv1.VariableData) (outputs []map[string]interface{}) {
 	for _, outputsItem := range result {
@@ -1417,8 +1408,6 @@ func dataSourceActionOutputsMetadataToMap(metadataItem schematicsv1.VariableMeta
 	return metadataMap
 }
 
-
-
 func dataSourceActionFlattenSettings(result []schematicsv1.VariableData) (settings []map[string]interface{}) {
 	for _, settingsItem := range result {
 		settings = append(settings, dataSourceActionSettingsToMap(settingsItem))
@@ -1504,8 +1493,6 @@ func dataSourceActionSettingsMetadataToMap(metadataItem schematicsv1.VariableMet
 	return metadataMap
 }
 
-
-
 func dataSourceActionFlattenState(result schematicsv1.ActionState) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceActionStateToMap(result)
@@ -1530,7 +1517,6 @@ func dataSourceActionStateToMap(stateItem schematicsv1.ActionState) (stateMap ma
 	return stateMap
 }
 
-
 func dataSourceActionFlattenSysLock(result schematicsv1.SystemLock) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceActionSysLockToMap(result)
@@ -1554,4 +1540,3 @@ func dataSourceActionSysLockToMap(sysLockItem schematicsv1.SystemLock) (sysLockM
 
 	return sysLockMap
 }
-
