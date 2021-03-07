@@ -17,7 +17,9 @@
 package ibm
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -43,28 +45,13 @@ func dataSourceIBMSchematicsState() *schema.Resource {
 				Required:    true,
 				Description: "The Template ID for which you want to get the values.  Use the GET /workspaces to look up the workspace IDs  or template IDs in your IBM Cloud account.",
 			},
-			"version": &schema.Schema{
-				Type:     schema.TypeFloat,
-				Computed: true,
-			},
-			"terraform_version": &schema.Schema{
+			"state_store": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"serial": &schema.Schema{
-				Type:     schema.TypeFloat,
-				Computed: true,
-			},
-			"lineage": &schema.Schema{
+			"state_store_json": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
-			},
-			"modules": &schema.Schema{
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
-				},
 			},
 		},
 	}
@@ -81,28 +68,33 @@ func dataSourceIBMSchematicsStateRead(context context.Context, d *schema.Resourc
 	getWorkspaceTemplateStateOptions.SetWID(d.Get("workspace_id").(string))
 	getWorkspaceTemplateStateOptions.SetTID(d.Get("template_id").(string))
 
-	templateStateStore, response, err := schematicsClient.GetWorkspaceTemplateStateWithContext(context, getWorkspaceTemplateStateOptions)
+	_, response, err := schematicsClient.GetWorkspaceTemplateStateWithContext(context, getWorkspaceTemplateStateOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetWorkspaceTemplateStateWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
 
 	d.SetId(dataSourceIBMSchematicsStateID(d))
-	if err = d.Set("version", templateStateStore.Version); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+
+	var stateStore map[string]interface{}
+	json.Unmarshal(response.Result.(json.RawMessage), &stateStore)
+
+	b := bytes.NewReader(response.Result.(json.RawMessage))
+
+	decoder := json.NewDecoder(b)
+	decoder.UseNumber()
+	decoder.Decode(&stateStore)
+
+	statestr := fmt.Sprintf("%v", stateStore)
+	d.Set("state_store", statestr)
+
+	stateByte, err := json.MarshalIndent(stateStore, "", "")
+	if err != nil {
+		return diag.FromErr(err)
 	}
-	if err = d.Set("terraform_version", templateStateStore.TerraformVersion); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting terraform_version: %s", err))
-	}
-	if err = d.Set("serial", templateStateStore.Serial); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting serial: %s", err))
-	}
-	if err = d.Set("lineage", templateStateStore.Lineage); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lineage: %s", err))
-	}
-	if err = d.Set("modules", templateStateStore.Modules); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting modules: %s", err))
-	}
+
+	stateStoreJSON := string(stateByte[:])
+	d.Set("state_store_json", stateStoreJSON)
 
 	return nil
 }

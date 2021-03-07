@@ -52,11 +52,6 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 				Computed:    true,
 				Description: "Schematics job command name.",
 			},
-			"command_parameter": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Schematics job command parameter (playbook-name, capsule-name or flow-name).",
-			},
 			"command_options": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -1112,9 +1107,6 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	}
 	if err = d.Set("command_name", job.CommandName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting command_name: %s", err))
-	}
-	if err = d.Set("command_parameter", job.CommandParameter); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting command_parameter: %s", err))
 	}
 	if err = d.Set("command_options", job.CommandOptions); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting command_options: %s", err))

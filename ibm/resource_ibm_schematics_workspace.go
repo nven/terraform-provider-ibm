@@ -106,7 +106,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Workspace name.",
 			},
 			"resource_group": &schema.Schema{
@@ -205,7 +205,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "Template type.",
 						},
 						"uninstall_script_name": &schema.Schema{
@@ -304,12 +304,18 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 							Optional:    true,
 							Description: "Source URL.",
 						},
+						"has_uploadedgitrepotar": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Has uploaded git repo tar",
+						},
 					},
 				},
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "List of Workspace type.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -703,6 +709,28 @@ func resourceIBMSchematicsWorkspaceMapToTemplateRepoRequest(templateRepoRequestM
 	return templateRepoRequest
 }
 
+func resourceIBMSchematicsWorkspaceMapToTemplateRepoUpdateRequest(templateRepoUpdateRequestMap map[string]interface{}) schematicsv1.TemplateRepoUpdateRequest {
+	templateRepoUpdateRequest := schematicsv1.TemplateRepoUpdateRequest{}
+
+	if templateRepoUpdateRequestMap["branch"] != nil {
+		templateRepoUpdateRequest.Branch = core.StringPtr(templateRepoUpdateRequestMap["branch"].(string))
+	}
+	if templateRepoUpdateRequestMap["release"] != nil {
+		templateRepoUpdateRequest.Release = core.StringPtr(templateRepoUpdateRequestMap["release"].(string))
+	}
+	if templateRepoUpdateRequestMap["repo_sha_value"] != nil {
+		templateRepoUpdateRequest.RepoShaValue = core.StringPtr(templateRepoUpdateRequestMap["repo_sha_value"].(string))
+	}
+	if templateRepoUpdateRequestMap["repo_url"] != nil {
+		templateRepoUpdateRequest.RepoURL = core.StringPtr(templateRepoUpdateRequestMap["repo_url"].(string))
+	}
+	if templateRepoUpdateRequestMap["url"] != nil {
+		templateRepoUpdateRequest.URL = core.StringPtr(templateRepoUpdateRequestMap["url"].(string))
+	}
+
+	return templateRepoUpdateRequest
+}
+
 func resourceIBMSchematicsWorkspaceMapToWorkspaceStatusRequest(workspaceStatusRequestMap map[string]interface{}) schematicsv1.WorkspaceStatusRequest {
 	workspaceStatusRequest := schematicsv1.WorkspaceStatusRequest{}
 
@@ -732,6 +760,33 @@ func resourceIBMSchematicsWorkspaceMapToWorkspaceStatusRequest(workspaceStatusRe
 	}
 
 	return workspaceStatusRequest
+}
+
+func resourceIBMSchematicsWorkspaceMapToWorkspaceStatusUpdateRequest(workspaceStatusUpdateRequestMap map[string]interface{}) schematicsv1.WorkspaceStatusUpdateRequest {
+	workspaceStatusUpdateRequest := schematicsv1.WorkspaceStatusUpdateRequest{}
+
+	if workspaceStatusUpdateRequestMap["frozen"] != nil {
+		workspaceStatusUpdateRequest.Frozen = core.BoolPtr(workspaceStatusUpdateRequestMap["frozen"].(bool))
+	}
+	if workspaceStatusUpdateRequestMap["frozen_at"] != nil {
+		frozenAt := workspaceStatusUpdateRequestMap["frozen_at"].(strfmt.DateTime)
+		workspaceStatusUpdateRequest.FrozenAt = &frozenAt
+	}
+	if workspaceStatusUpdateRequestMap["frozen_by"] != nil {
+		workspaceStatusUpdateRequest.FrozenBy = core.StringPtr(workspaceStatusUpdateRequestMap["frozen_by"].(string))
+	}
+	if workspaceStatusUpdateRequestMap["locked"] != nil {
+		workspaceStatusUpdateRequest.Locked = core.BoolPtr(workspaceStatusUpdateRequestMap["locked"].(bool))
+	}
+	if workspaceStatusUpdateRequestMap["locked_by"] != nil {
+		workspaceStatusUpdateRequest.LockedBy = core.StringPtr(workspaceStatusUpdateRequestMap["locked_by"].(string))
+	}
+	if workspaceStatusUpdateRequestMap["locked_time"] != nil {
+		lockedTime := workspaceStatusUpdateRequestMap["locked_time"].(strfmt.DateTime)
+		workspaceStatusUpdateRequest.LockedTime = &lockedTime
+	}
+
+	return workspaceStatusUpdateRequest
 }
 
 func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -779,9 +834,9 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 	}
 	if _, ok := d.GetOk("shared_data"); ok {
 		if workspaceResponse.SharedData != nil {
-			sharedDataMap := resourceIBMSchematicsWorkspaceSharedTargetDataToMap(*workspaceResponse.SharedData)
+			sharedDataMap := resourceIBMSchematicsWorkspaceSharedTargetDataResponseToMap(*workspaceResponse.SharedData)
 			if err = d.Set("shared_data", []map[string]interface{}{sharedDataMap}); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting shared_data: %s", err))
+				return diag.FromErr(fmt.Errorf("Error reading shared_data: %s", err))
 			}
 		}
 	}
@@ -793,7 +848,7 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 	if workspaceResponse.TemplateData != nil {
 		templateData := []map[string]interface{}{}
 		for _, templateDataItem := range workspaceResponse.TemplateData {
-			templateDataItemMap := resourceIBMSchematicsWorkspaceTemplateSourceDataRequestToMap(templateDataItem)
+			templateDataItemMap := resourceIBMSchematicsWorkspaceTemplateSourceDataResponseToMap(templateDataItem)
 			templateData = append(templateData, templateDataItemMap)
 		}
 		if err = d.Set("template_data", templateData); err != nil {
@@ -805,7 +860,7 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 	}
 	if _, ok := d.GetOk("template_repo"); ok {
 		if workspaceResponse.TemplateRepo != nil {
-			templateRepoMap := resourceIBMSchematicsWorkspaceTemplateRepoRequestToMap(*workspaceResponse.TemplateRepo)
+			templateRepoMap := resourceIBMSchematicsWorkspaceTemplateRepoResponseToMap(*workspaceResponse.TemplateRepo)
 			if err = d.Set("template_repo", []map[string]interface{}{templateRepoMap}); err != nil {
 				return diag.FromErr(fmt.Errorf("Error reading template_repo: %s", err))
 			}
@@ -817,13 +872,10 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 		}
 	}
 	if workspaceResponse.WorkspaceStatus != nil {
-		workspaceStatusMap := resourceIBMSchematicsWorkspaceWorkspaceStatusRequestToMap(*workspaceResponse.WorkspaceStatus)
+		workspaceStatusMap := resourceIBMSchematicsWorkspaceWorkspaceStatusResponseToMap(*workspaceResponse.WorkspaceStatus)
 		if err = d.Set("workspace_status", []map[string]interface{}{workspaceStatusMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting workspace_status: %s", err))
 		}
-	}
-	if err = d.Set("x_github_token", workspaceResponse.XGithubToken); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting x_github_token: %s", err))
 	}
 	if workspaceResponse.CreatedAt != nil {
 		if err = d.Set("created_at", workspaceResponse.CreatedAt.String()); err != nil {
@@ -910,6 +962,25 @@ func resourceIBMSchematicsWorkspaceSharedTargetDataToMap(sharedTargetData schema
 	return sharedTargetDataMap
 }
 
+func resourceIBMSchematicsWorkspaceSharedTargetDataResponseToMap(sharedTargetData schematicsv1.SharedTargetDataResponse) map[string]interface{} {
+	sharedTargetDataResponseMap := map[string]interface{}{}
+
+	sharedTargetDataResponseMap["cluster_id"] = sharedTargetData.ClusterID
+	sharedTargetDataResponseMap["cluster_name"] = sharedTargetData.ClusterName
+	if sharedTargetData.EntitlementKeys != nil {
+		entitlementKeys := []interface{}{}
+		for _, entitlementKeysItem := range sharedTargetData.EntitlementKeys {
+			entitlementKeys = append(entitlementKeys, entitlementKeysItem)
+		}
+		sharedTargetDataResponseMap["entitlement_keys"] = entitlementKeys
+	}
+	sharedTargetDataResponseMap["namespace"] = sharedTargetData.Namespace
+	sharedTargetDataResponseMap["region"] = sharedTargetData.Region
+	sharedTargetDataResponseMap["resource_group_id"] = sharedTargetData.ResourceGroupID
+
+	return sharedTargetDataResponseMap
+}
+
 func resourceIBMSchematicsWorkspaceTemplateSourceDataRequestToMap(templateSourceDataRequest schematicsv1.TemplateSourceDataRequest) map[string]interface{} {
 	templateSourceDataRequestMap := map[string]interface{}{}
 
@@ -945,6 +1016,46 @@ func resourceIBMSchematicsWorkspaceTemplateSourceDataRequestToMap(templateSource
 	return templateSourceDataRequestMap
 }
 
+func resourceIBMSchematicsWorkspaceTemplateSourceDataResponseToMap(templateSourceDataResponse schematicsv1.TemplateSourceDataResponse) map[string]interface{} {
+	templateSourceDataResponseMap := map[string]interface{}{}
+
+	if templateSourceDataResponse.EnvValues != nil {
+		envValues := []map[string]interface{}{}
+		for _, envValuesItem := range templateSourceDataResponse.EnvValues {
+			flattenedEnvVals := map[string]interface{}{}
+			if envValuesItem.Name != nil {
+				flattenedEnvVals[*envValuesItem.Name] = envValuesItem.Value
+			}
+
+			envValues = append(envValues, flattenedEnvVals)
+		}
+		templateSourceDataResponseMap["env_values"] = envValues
+	}
+	if templateSourceDataResponse.Type != nil {
+		templateSourceDataResponseMap["type"] = templateSourceDataResponse.Type
+	}
+	templateSourceDataResponseMap["folder"] = templateSourceDataResponse.Folder
+	templateSourceDataResponseMap["uninstall_script_name"] = templateSourceDataResponse.UninstallScriptName
+	templateSourceDataResponseMap["values"] = templateSourceDataResponse.Values
+	if templateSourceDataResponse.ValuesMetadata != nil {
+		valuesMetadata := []interface{}{}
+		for _, valuesMetadataItem := range templateSourceDataResponse.ValuesMetadata {
+			valuesMetadata = append(valuesMetadata, valuesMetadataItem)
+		}
+		templateSourceDataResponseMap["values_metadata"] = valuesMetadata
+	}
+	if templateSourceDataResponse.Variablestore != nil {
+		variablestore := []map[string]interface{}{}
+		for _, variablestoreItem := range templateSourceDataResponse.Variablestore {
+			variablestoreItemMap := resourceIBMSchematicsWorkspaceWorkspaceVariableResponseToMap(variablestoreItem)
+			variablestore = append(variablestore, variablestoreItemMap)
+		}
+		templateSourceDataResponseMap["variablestore"] = variablestore
+	}
+
+	return templateSourceDataResponseMap
+}
+
 func resourceIBMSchematicsWorkspaceWorkspaceVariableRequestToMap(workspaceVariableRequest schematicsv1.WorkspaceVariableRequest) map[string]interface{} {
 	workspaceVariableRequestMap := map[string]interface{}{}
 
@@ -954,6 +1065,18 @@ func resourceIBMSchematicsWorkspaceWorkspaceVariableRequestToMap(workspaceVariab
 	workspaceVariableRequestMap["type"] = workspaceVariableRequest.Type
 	workspaceVariableRequestMap["use_default"] = workspaceVariableRequest.UseDefault
 	workspaceVariableRequestMap["value"] = workspaceVariableRequest.Value
+
+	return workspaceVariableRequestMap
+}
+
+func resourceIBMSchematicsWorkspaceWorkspaceVariableResponseToMap(workspaceVariableResponse schematicsv1.WorkspaceVariableResponse) map[string]interface{} {
+	workspaceVariableRequestMap := map[string]interface{}{}
+
+	workspaceVariableRequestMap["description"] = workspaceVariableResponse.Description
+	workspaceVariableRequestMap["name"] = workspaceVariableResponse.Name
+	workspaceVariableRequestMap["secure"] = workspaceVariableResponse.Secure
+	workspaceVariableRequestMap["type"] = workspaceVariableResponse.Type
+	workspaceVariableRequestMap["value"] = workspaceVariableResponse.Value
 
 	return workspaceVariableRequestMap
 }
@@ -970,6 +1093,19 @@ func resourceIBMSchematicsWorkspaceTemplateRepoRequestToMap(templateRepoRequest 
 	return templateRepoRequestMap
 }
 
+func resourceIBMSchematicsWorkspaceTemplateRepoResponseToMap(templateRepoResponse schematicsv1.TemplateRepoResponse) map[string]interface{} {
+	templateRepoResponseMap := map[string]interface{}{}
+
+	templateRepoResponseMap["branch"] = templateRepoResponse.Branch
+	templateRepoResponseMap["release"] = templateRepoResponse.Release
+	templateRepoResponseMap["repo_sha_value"] = templateRepoResponse.RepoShaValue
+	templateRepoResponseMap["repo_url"] = templateRepoResponse.RepoURL
+	templateRepoResponseMap["url"] = templateRepoResponse.URL
+	templateRepoResponseMap["has_uploadedgitrepotar"] = templateRepoResponse.HasUploadedgitrepotar
+
+	return templateRepoResponseMap
+}
+
 func resourceIBMSchematicsWorkspaceWorkspaceStatusRequestToMap(workspaceStatusRequest schematicsv1.WorkspaceStatusRequest) map[string]interface{} {
 	workspaceStatusRequestMap := map[string]interface{}{}
 
@@ -981,6 +1117,23 @@ func resourceIBMSchematicsWorkspaceWorkspaceStatusRequestToMap(workspaceStatusRe
 	workspaceStatusRequestMap["locked_time"] = workspaceStatusRequest.LockedTime.String()
 
 	return workspaceStatusRequestMap
+}
+
+func resourceIBMSchematicsWorkspaceWorkspaceStatusResponseToMap(workspaceStatusResponse schematicsv1.WorkspaceStatusResponse) map[string]interface{} {
+	workspaceStatusResponseMap := map[string]interface{}{}
+
+	workspaceStatusResponseMap["frozen"] = workspaceStatusResponse.Frozen
+	if workspaceStatusResponse.FrozenAt != nil {
+		workspaceStatusResponseMap["frozen_at"] = workspaceStatusResponse.FrozenAt.String()
+	}
+	workspaceStatusResponseMap["frozen_by"] = workspaceStatusResponse.FrozenBy
+	workspaceStatusResponseMap["locked"] = workspaceStatusResponse.Locked
+	workspaceStatusResponseMap["locked_by"] = workspaceStatusResponse.LockedBy
+	if workspaceStatusResponse.LockedTime != nil {
+		workspaceStatusResponseMap["locked_time"] = workspaceStatusResponse.LockedTime.String()
+	}
+
+	return workspaceStatusResponseMap
 }
 
 func resourceIBMSchematicsWorkspaceTemplateRunTimeDataResponseToMap(templateRunTimeDataResponse schematicsv1.TemplateRunTimeDataResponse) map[string]interface{} {
@@ -1031,10 +1184,6 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 
 	hasChange := false
 
-	if d.HasChange("applied_shareddata_ids") {
-		// TODO: handle AppliedShareddataIds of type TypeList -- not primitive, not model
-		hasChange = true
-	}
 	if d.HasChange("catalog_ref") {
 		catalogRef := resourceIBMSchematicsWorkspaceMapToCatalogRef(d.Get("catalog_ref.0").(map[string]interface{}))
 		updateWorkspaceOptions.SetCatalogRef(&catalogRef)
@@ -1044,16 +1193,8 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		updateWorkspaceOptions.SetDescription(d.Get("description").(string))
 		hasChange = true
 	}
-	if d.HasChange("location") {
-		updateWorkspaceOptions.SetLocation(d.Get("location").(string))
-		hasChange = true
-	}
 	if d.HasChange("name") {
 		updateWorkspaceOptions.SetName(d.Get("name").(string))
-		hasChange = true
-	}
-	if d.HasChange("resource_group") {
-		updateWorkspaceOptions.SetResourceGroup(d.Get("resource_group").(string))
 		hasChange = true
 	}
 	if d.HasChange("shared_data") {
@@ -1076,7 +1217,7 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		hasChange = true
 	}
 	if d.HasChange("template_repo") {
-		templateRepo := resourceIBMSchematicsWorkspaceMapToTemplateRepoRequest(d.Get("template_repo.0").(map[string]interface{}))
+		templateRepo := resourceIBMSchematicsWorkspaceMapToTemplateRepoUpdateRequest(d.Get("template_repo.0").(map[string]interface{}))
 		updateWorkspaceOptions.SetTemplateRepo(&templateRepo)
 		hasChange = true
 	}
@@ -1085,12 +1226,8 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		hasChange = true
 	}
 	if d.HasChange("workspace_status") {
-		workspaceStatus := resourceIBMSchematicsWorkspaceMapToWorkspaceStatusRequest(d.Get("workspace_status.0").(map[string]interface{}))
+		workspaceStatus := resourceIBMSchematicsWorkspaceMapToWorkspaceStatusUpdateRequest(d.Get("workspace_status.0").(map[string]interface{}))
 		updateWorkspaceOptions.SetWorkspaceStatus(&workspaceStatus)
-		hasChange = true
-	}
-	if d.HasChange("x_github_token") {
-		updateWorkspaceOptions.SetXGithubToken(d.Get("x_github_token").(string))
 		hasChange = true
 	}
 
@@ -1111,9 +1248,17 @@ func resourceIBMSchematicsWorkspaceDelete(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
+	session, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	deleteWorkspaceOptions := &schematicsv1.DeleteWorkspaceOptions{}
 
 	deleteWorkspaceOptions.SetWID(d.Id())
+
+	iamRefreshToken := session.Config.IAMRefreshToken
+	deleteWorkspaceOptions.SetRefreshToken(iamRefreshToken)
 
 	_, response, err := schematicsClient.DeleteWorkspaceWithContext(context, deleteWorkspaceOptions)
 	if err != nil {
