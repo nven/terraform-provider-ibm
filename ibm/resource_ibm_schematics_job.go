@@ -38,31 +38,26 @@ func resourceIBMSchematicsJob() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"refresh_token": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The IAM refresh token associated with the IBM Cloud account.",
-			},
 			"command_object": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_schematics_job", "command_object"),
 				Description:  "Name of the Schematics automation resource.",
 			},
 			"command_object_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Job command object id (workspace-id, action-id or control-id).",
 			},
 			"command_name": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_schematics_job", "command_name"),
 				Description:  "Schematics job command name.",
 			},
 			"command_parameter": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Schematics job command parameter (playbook-name, capsule-name or flow-name).",
 			},
 			"command_options": &schema.Schema{
@@ -318,6 +313,7 @@ func resourceIBMSchematicsJob() *schema.Resource {
 			"status": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Job Status.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -853,6 +849,7 @@ func resourceIBMSchematicsJob() *schema.Resource {
 			"job_log_summary": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Job log summary record.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1123,9 +1120,16 @@ func resourceIBMSchematicsJobCreate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	createJobOptions := &schematicsv1.CreateJobOptions{}
+	session, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	createJobOptions.SetRefreshToken(d.Get("refresh_token").(string))
+	iamRefreshToken := session.Config.IAMRefreshToken
+
+	createJobOptions := &schematicsv1.CreateJobOptions{}
+	createJobOptions.SetRefreshToken(iamRefreshToken)
+
 	if _, ok := d.GetOk("command_object"); ok {
 		createJobOptions.SetCommandObject(d.Get("command_object").(string))
 	}
@@ -1579,9 +1583,6 @@ func resourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	if err = d.Set("refresh_token", job.RefreshToken); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting refresh_token: %s", err))
-	}
 	if err = d.Set("command_object", job.CommandObject); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting command_object: %s", err))
 	}
@@ -1591,8 +1592,10 @@ func resourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceDat
 	if err = d.Set("command_name", job.CommandName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting command_name: %s", err))
 	}
-	if err = d.Set("command_parameter", job.CommandParameter); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting command_parameter: %s", err))
+	if _, ok := d.GetOk("command_parameter"); ok {
+		if err = d.Set("command_parameter", d.Get("command_parameter").(string)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting command_parameter: %s", err))
+		}
 	}
 	if job.CommandOptions != nil {
 		if err = d.Set("command_options", job.CommandOptions); err != nil {
@@ -1929,10 +1932,18 @@ func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	session, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	iamRefreshToken := session.Config.IAMRefreshToken
+
 	replaceJobOptions := &schematicsv1.ReplaceJobOptions{}
 
 	replaceJobOptions.SetJobID(d.Id())
-	replaceJobOptions.SetRefreshToken(d.Get("refresh_token").(string))
+	replaceJobOptions.SetRefreshToken(iamRefreshToken)
+
 	if _, ok := d.GetOk("command_object"); ok {
 		replaceJobOptions.SetCommandObject(d.Get("command_object").(string))
 	}
@@ -1999,12 +2010,21 @@ func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceD
 }
 
 func resourceIBMSchematicsJobDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+	session, err := meta.(ClientSession).BluemixSession()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	schematicsClient, err := meta.(ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	deleteJobOptions := &schematicsv1.DeleteJobOptions{}
+
+	iamRefreshToken := session.Config.IAMRefreshToken
+	deleteJobOptions.SetRefreshToken(iamRefreshToken)
 
 	deleteJobOptions.SetJobID(d.Id())
 

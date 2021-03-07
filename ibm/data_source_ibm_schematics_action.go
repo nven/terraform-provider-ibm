@@ -1001,6 +1001,8 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 		if err = d.Set("playbook_names", action.PlaybookNames); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting playbook_names: %s", err))
 		}
+	} else {
+		d.Set("playbook_names", []string{})
 	}
 
 	if action.SysLock != nil {

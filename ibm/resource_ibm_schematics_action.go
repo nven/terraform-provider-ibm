@@ -40,7 +40,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Action name (unique for an account).",
 			},
 			"description": &schema.Schema{
@@ -68,6 +68,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"user_state": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "User defined status of the Schematics object.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1368,12 +1369,12 @@ func resourceIBMSchematicsActionRead(context context.Context, d *schema.Resource
 	if err = d.Set("namespace", action.Namespace); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting namespace: %s", err))
 	}
-	if _, ok := d.GetOk("playbook_names"); ok {
-		if action.PlaybookNames != nil {
-			if err = d.Set("playbook_names", action.PlaybookNames); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting playbook_names: %s", err))
-			}
+	if action.PlaybookNames != nil && len(action.PlaybookNames) > 0 {
+		if err = d.Set("playbook_names", action.PlaybookNames); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting playbook_names: %s", err))
 		}
+	} else {
+		d.Set("playbook_names", []string{})
 	}
 
 	return nil
@@ -1613,10 +1614,6 @@ func resourceIBMSchematicsActionUpdate(context context.Context, d *schema.Resour
 	if d.HasChange("sys_lock") {
 		sysLock := resourceIBMSchematicsActionMapToSystemLock(d.Get("sys_lock.0").(map[string]interface{}))
 		updateActionOptions.SetSysLock(&sysLock)
-		hasChange = true
-	}
-	if d.HasChange("x_github_token") {
-		updateActionOptions.SetXGithubToken(d.Get("x_github_token").(string))
 		hasChange = true
 	}
 
