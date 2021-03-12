@@ -1107,7 +1107,7 @@ func resourceIBMSchematicsJobValidator() *ResourceValidator {
 			ValidateFunctionIdentifier: ValidateAllowedStringValue,
 			Type:                       TypeString,
 			Optional:                   true,
-			AllowedValues:              "eu_de, eu_gb, us_east, us_south",
+			AllowedValues:              "eu-de, eu-gb, us-east, us-south",
 		})
 
 	resourceValidator := ResourceValidator{ResourceName: "ibm_schematics_job", Schema: validateSchema}
@@ -1206,8 +1206,8 @@ func resourceIBMSchematicsJobMapToVariableData(variableDataMap map[string]interf
 	if variableDataMap["value"] != nil {
 		variableData.Value = core.StringPtr(variableDataMap["value"].(string))
 	}
-	if variableDataMap["metadata"] != nil {
-		variableMetaData := resourceIBMSchematicsJobMapToVariableMetadata(variableDataMap["metadata"].(map[string]interface{}))
+	if variableDataMap["metadata"] != nil && len(variableDataMap["metadata"].([]interface{})) != 0 {
+		variableMetaData := resourceIBMSchematicsJobMapToVariableMetadata(variableDataMap["metadata"].([]interface{})[0].(map[string]interface{}))
 		variableData.Metadata = &variableMetaData
 	}
 	if variableDataMap["link"] != nil {
