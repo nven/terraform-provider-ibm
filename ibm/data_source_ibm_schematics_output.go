@@ -28,37 +28,9 @@ func dataSourceIBMSchematicsOutput() *schema.Resource {
 				Required:    true,
 				Description: "The id of template",
 			},
-			"output_values": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "OutputValues -.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"folder": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Output variable name.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Output variable id.",
-						},
-						"output_values": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of Output values.",
-							Elem: &schema.Schema{
-								Type: schema.TypeMap,
-							},
-						},
-						"value_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Output variable type.",
-						},
-					},
-				},
+			"output_values": {
+				Type:     schema.TypeMap,
+				Computed: true,
 			},
 			"output_json": {
 				Type:        schema.TypeString,
@@ -93,13 +65,6 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	if outputValuesList != nil {
-		err = d.Set("output_values", dataSourceOutputValuesListFlattenOutputValues(outputValuesList))
-		if err != nil {
-			return fmt.Errorf("Error setting output_values %s", err)
-		}
-	}
-
 	var outputJSON string
 	items := make(map[string]interface{})
 	found := false
@@ -127,6 +92,7 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set("output_json", outputJSON)
 	d.SetId(fmt.Sprintf("%s/%s", workspaceID, templateID))
+	d.Set("output_values", Flatten(items))
 
 	controller, err := getBaseController(meta)
 	if err != nil {
@@ -143,9 +109,9 @@ func dataSourceIBMSchematicsOutputID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceOutputValuesListFlattenOutputValues(result []schematicsv1.OutputValuesItem) (outputValues []interface{}) {
+func dataSourceOutputValuesListFlattenOutputValues(result []schematicsv1.OutputValuesItem) (outputValues interface{}) {
 	for _, outputValuesItem := range result {
-		outputValues = append(outputValues, dataSourceOutputValuesListOutputValuesToMap(outputValuesItem))
+		outputValues = dataSourceOutputValuesListOutputValuesToMap(outputValuesItem)
 	}
 
 	return outputValues

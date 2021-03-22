@@ -19,8 +19,7 @@ func TestAccIBMSchematicsOutputDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMSchematicsOutputDataSourceConfigBasic(workspaceID, templateID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_output.schematics_output", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_output.schematics_output", "output_values.#"),
+					resource.TestCheckResourceAttr("data.ibm_schematics_output.schematics_output", "workspace_id", workspaceID),
 				),
 			},
 		},
