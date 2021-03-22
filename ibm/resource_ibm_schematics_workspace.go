@@ -196,7 +196,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"template_type": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "The Terraform version that you want to use to run your Terraform code. Enter `terraform_v0.12` to use Terraform version 0.12, and `terraform_v0.11` to use Terraform version 0.11. If no value is specified, the Terraform config files are run with Terraform version 0.11. Make sure that your Terraform config files are compatible with the Terraform version that you select.",
+				Description:  "The Terraform version that you want to use to run your Terraform code. Enter `terraform_v0.12` to use Terraform version 0.12, and `terraform_v0.11` to use Terraform version 0.11. Make sure that your Terraform config files are compatible with the Terraform version that you select.",
 				ValidateFunc: InvokeValidator("ibm_schematics_workspace", schematicsWorkspaceTemplateType),
 			},
 			"template_uninstall_script_name": &schema.Schema{
