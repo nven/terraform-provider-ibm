@@ -722,7 +722,6 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			},
 			"state": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
 				Computed:    true,
 				Description: "Computed state of an action.",
 				Elem: &schema.Resource{
