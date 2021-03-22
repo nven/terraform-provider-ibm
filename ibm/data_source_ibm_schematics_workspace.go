@@ -101,11 +101,6 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 				Computed:    true,
 				Description: "The description of the workspace.",
 			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Workspace id.",
-			},
 			"last_health_check_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -469,9 +464,6 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	}
 	if err = d.Set("description", workspaceResponse.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
-	}
-	if err = d.Set("id", workspaceResponse.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
 	if err = d.Set("last_health_check_at", workspaceResponse.LastHealthCheckAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting last_health_check_at: %s", err))
