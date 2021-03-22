@@ -25,7 +25,7 @@ func dataSourceIBMSchematicsOutput() *schema.Resource {
 			},
 			"template_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "The id of template",
 			},
 			"output_values": &schema.Schema{
