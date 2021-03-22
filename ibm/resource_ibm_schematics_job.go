@@ -1157,20 +1157,32 @@ func resourceIBMSchematicsJobCreate(context context.Context, d *schema.ResourceD
 		createJobOptions.SetLocation(d.Get("location").(string))
 	}
 	if _, ok := d.GetOk("status"); ok {
-		status := resourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
-		createJobOptions.SetStatus(&status)
+		statusAttr := d.Get("status").([]interface{})
+		if len(statusAttr) > 0 {
+			status := resourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
+			createJobOptions.SetStatus(&status)
+		}
 	}
 	if _, ok := d.GetOk("data"); ok {
-		data := resourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
-		createJobOptions.SetData(&data)
+		dataAttr := d.Get("data").([]interface{})
+		if len(dataAttr) > 0 {
+			data := resourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
+			createJobOptions.SetData(&data)
+		}
 	}
 	if _, ok := d.GetOk("bastion"); ok {
-		bastion := resourceIBMSchematicsJobMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
-		createJobOptions.SetBastion(&bastion)
+		bastionAttr := d.Get("bastion").([]interface{})
+		if len(bastionAttr) > 0 {
+			bastion := resourceIBMSchematicsJobMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
+			createJobOptions.SetBastion(&bastion)
+		}
 	}
 	if _, ok := d.GetOk("job_log_summary"); ok {
-		logSummary := resourceIBMSchematicsJobMapToJobLogSummary(d.Get("job_log_summary.0").(map[string]interface{}))
-		createJobOptions.SetLogSummary(&logSummary)
+		jobLogSummaryAttr := d.Get("job_log_summary").([]interface{})
+		if len(jobLogSummaryAttr) > 0 {
+			logSummary := resourceIBMSchematicsJobMapToJobLogSummary(d.Get("job_log_summary.0").(map[string]interface{}))
+			createJobOptions.SetLogSummary(&logSummary)
+		}
 	}
 
 	job, response, err := schematicsClient.CreateJobWithContext(context, createJobOptions)
@@ -1971,20 +1983,32 @@ func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceD
 		replaceJobOptions.SetLocation(d.Get("location").(string))
 	}
 	if _, ok := d.GetOk("status"); ok {
-		status := resourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
-		replaceJobOptions.SetStatus(&status)
+		statusAttr := d.Get("status").([]interface{})
+		if len(statusAttr) > 0 {
+			status := resourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
+			replaceJobOptions.SetStatus(&status)
+		}
 	}
 	if _, ok := d.GetOk("data"); ok {
-		data := resourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
-		replaceJobOptions.SetData(&data)
+		dataAttr := d.Get("data").([]interface{})
+		if len(dataAttr) > 0 {
+			data := resourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
+			replaceJobOptions.SetData(&data)
+		}
 	}
 	if _, ok := d.GetOk("bastion"); ok {
-		bastion := resourceIBMSchematicsJobMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
-		replaceJobOptions.SetBastion(&bastion)
+		bastionAttr := d.Get("bastion").([]interface{})
+		if len(bastionAttr) > 0 {
+			bastion := resourceIBMSchematicsJobMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
+			replaceJobOptions.SetBastion(&bastion)
+		}
 	}
 	if _, ok := d.GetOk("job_log_summary"); ok {
-		logSummary := resourceIBMSchematicsJobMapToJobLogSummary(d.Get("job_log_summary.0").(map[string]interface{}))
-		replaceJobOptions.SetLogSummary(&logSummary)
+		jobLogSummaryAttr := d.Get("job_log_summary").([]interface{})
+		if len(jobLogSummaryAttr) > 0 {
+			logSummary := resourceIBMSchematicsJobMapToJobLogSummary(d.Get("job_log_summary.0").(map[string]interface{}))
+			replaceJobOptions.SetLogSummary(&logSummary)
+		}
 	}
 
 	_, response, err := schematicsClient.ReplaceJobWithContext(context, replaceJobOptions)

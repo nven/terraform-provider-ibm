@@ -482,8 +482,11 @@ func resourceIBMSchematicsWorkspaceCreate(context context.Context, d *schema.Res
 		createWorkspaceOptions.SetAppliedShareddataIds(expandStringList(d.Get("applied_shareddata_ids").([]interface{})))
 	}
 	if _, ok := d.GetOk("catalog_ref"); ok {
-		catalogRef := resourceIBMSchematicsWorkspaceMapToCatalogRef(d.Get("catalog_ref.0").(map[string]interface{}))
-		createWorkspaceOptions.SetCatalogRef(&catalogRef)
+		catalogRefAttr := d.Get("catalog_ref").([]interface{})
+		if len(catalogRefAttr) > 0 {
+			catalogRef := resourceIBMSchematicsWorkspaceMapToCatalogRef(d.Get("catalog_ref.0").(map[string]interface{}))
+			createWorkspaceOptions.SetCatalogRef(&catalogRef)
+		}
 	}
 	if _, ok := d.GetOk("description"); ok {
 		createWorkspaceOptions.SetDescription(d.Get("description").(string))
@@ -498,8 +501,11 @@ func resourceIBMSchematicsWorkspaceCreate(context context.Context, d *schema.Res
 		createWorkspaceOptions.SetResourceGroup(d.Get("resource_group").(string))
 	}
 	if _, ok := d.GetOk("shared_data"); ok {
-		sharedData := resourceIBMSchematicsWorkspaceMapToSharedTargetData(d.Get("shared_data.0").(map[string]interface{}))
-		createWorkspaceOptions.SetSharedData(&sharedData)
+		sharedDataAttr := d.Get("shared_data").([]interface{})
+		if len(sharedDataAttr) > 0 {
+			sharedData := resourceIBMSchematicsWorkspaceMapToSharedTargetData(d.Get("shared_data.0").(map[string]interface{}))
+			createWorkspaceOptions.SetSharedData(&sharedData)
+		}
 	}
 	if _, ok := d.GetOk("tags"); ok {
 		createWorkspaceOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
@@ -1324,9 +1330,12 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 	hasChange := false
 
 	if d.HasChange("catalog_ref") {
-		catalogRef := resourceIBMSchematicsWorkspaceMapToCatalogRef(d.Get("catalog_ref.0").(map[string]interface{}))
-		updateWorkspaceOptions.SetCatalogRef(&catalogRef)
-		hasChange = true
+		catalogRefAttr := d.Get("catalog_ref").([]interface{})
+		if len(catalogRefAttr) > 0 {
+			catalogRef := resourceIBMSchematicsWorkspaceMapToCatalogRef(d.Get("catalog_ref.0").(map[string]interface{}))
+			updateWorkspaceOptions.SetCatalogRef(&catalogRef)
+			hasChange = true
+		}
 	}
 	if d.HasChange("description") {
 		updateWorkspaceOptions.SetDescription(d.Get("description").(string))
@@ -1337,9 +1346,12 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		hasChange = true
 	}
 	if d.HasChange("shared_data") {
-		sharedData := resourceIBMSchematicsWorkspaceMapToSharedTargetData(d.Get("shared_data.0").(map[string]interface{}))
-		updateWorkspaceOptions.SetSharedData(&sharedData)
-		hasChange = true
+		sharedDataAttr := d.Get("shared_data").([]interface{})
+		if len(sharedDataAttr) > 0 {
+			sharedData := resourceIBMSchematicsWorkspaceMapToSharedTargetData(d.Get("shared_data.0").(map[string]interface{}))
+			updateWorkspaceOptions.SetSharedData(&sharedData)
+			hasChange = true
+		}
 	}
 	if d.HasChange("tags") {
 		updateWorkspaceOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
