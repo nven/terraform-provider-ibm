@@ -1,4 +1,5 @@
 ---
+subcategory: "Schematics"
 layout: "ibm"
 page_title: "IBM : schematics_job"
 sidebar_current: "docs-ibm-resource-schematics-job"

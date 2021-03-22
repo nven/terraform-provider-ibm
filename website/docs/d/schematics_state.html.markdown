@@ -1,4 +1,5 @@
 ---
+subcategory: "Schematics"
 layout: "ibm"
 page_title: "IBM : schematics_state"
 sidebar_current: "docs-ibm-datasource-schematics-state"

@@ -1,4 +1,5 @@
 ---
+subcategory: "Schematics"
 layout: "ibm"
 page_title: "IBM : schematics_workspace"
 sidebar_current: "docs-ibm-datasource-schematics-workspace"
