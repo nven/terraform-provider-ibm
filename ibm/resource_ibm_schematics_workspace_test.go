@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -31,6 +32,43 @@ func TestAccIBMSchematicsWorkspaceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMSchematicsWorkspaceAllArgs(t *testing.T) {
+	var conf schematicsv1.WorkspaceResponse
+	description := fmt.Sprintf("tf-acc-test-schematics-all-args_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-acc-test-schematics_%d", acctest.RandIntRange(10, 100))
+
+	descriptionUpdate := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf-acc-test-schematics_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMSchematicsWorkspaceDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMSchematicsWorkspaceConfig(description, name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMSchematicsWorkspaceExists("ibm_schematics_workspace.schematics_workspace", conf),
+					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "description", description),
+					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "name", name),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMSchematicsWorkspaceConfig(descriptionUpdate, nameUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "name", nameUpdate),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_schematics_workspace.schematics_workspace",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckIBMSchematicsWorkspaceConfigBasic() string {
 	return fmt.Sprintf(`
 
@@ -42,6 +80,19 @@ func testAccCheckIBMSchematicsWorkspaceConfigBasic() string {
 			template_type = "terraform_v0.12.20"
 		}
 	`)
+}
+
+func testAccCheckIBMSchematicsWorkspaceConfig(description string, name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_schematics_workspace" "schematics_workspace" {
+			description = "%s"
+			location = "us-east"
+			name = "%s"
+			resource_group = "default"
+			template_type = "terraform_v0.12.20"
+		}
+	`, description, name)
 }
 
 func testAccCheckIBMSchematicsWorkspaceExists(n string, obj schematicsv1.WorkspaceResponse) resource.TestCheckFunc {
