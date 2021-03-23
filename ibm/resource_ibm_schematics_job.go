@@ -61,12 +61,12 @@ func resourceIBMSchematicsJob() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "Name of the variable.",
 						},
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "Value for the variable or reference to the value.",
 						},
 						"metadata": &schema.Schema{
