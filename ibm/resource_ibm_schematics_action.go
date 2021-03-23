@@ -189,13 +189,11 @@ func resourceIBMSchematicsAction() *schema.Resource {
 						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Targets creation time.",
 						},
 						"created_by": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "E-mail address of the user who created the targets.",
 						},
