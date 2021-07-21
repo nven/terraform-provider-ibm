@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package ibm
@@ -27,7 +27,7 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			"applied_shareddata_ids": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of applied shared dataset id.",
+				Description: "List of applied shared dataset ID.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -42,6 +42,11 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Dry run.",
+						},
+						"owning_account": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Owning account ID of the catalog.",
 						},
 						"item_icon_url": &schema.Schema{
 							Type:        schema.TypeString,
@@ -94,7 +99,7 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace CRN.",
+				Description: "The workspace CRN.",
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
@@ -221,7 +226,7 @@ func dataSourceIBMSchematicsWorkspace() *schema.Resource {
 			"status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The status of the workspace.  **Active**: After you successfully ran your infrastructure code by applying your Terraform execution plan, the state of your workspace changes to `Active`.  **Connecting**: Schematics tries to connect to the template in your source repo. If successfully connected, the template is downloaded and metadata, such as input parameters, is extracted. After the template is downloaded, the state of the workspace changes to `Scanning`.  **Draft**: The workspace is created without a reference to a GitHub or GitLab repository.  **Failed**: If errors occur during the execution of your infrastructure code in IBM Cloud Schematics, your workspace status is set to `Failed`.  **Inactive**: The Terraform template was scanned successfully and the workspace creation is complete. You can now start running Schematics plan and apply actions to provision the IBM Cloud resources that you specified in your template. If you have an `Active` workspace and decide to remove all your resources, your workspace is set to `Inactive` after all your resources are removed.  **In progress**: When you instruct IBM Cloud Schematics to run your infrastructure code by applying your Terraform execution plan, the status of our workspace changes to `In progress`.  **Scanning**: The download of the Terraform template is complete and vulnerability scanning started. If the scan is successful, the workspace state changes to `Inactive`. If errors in your template are found, the state changes to `Template Error`.  **Stopped**: The Schematics plan, apply, or destroy action was cancelled manually.  **Template Error**: The Schematics template contains errors and cannot be processed.",
+				Description: "The status of the workspace.   **Active**: After you successfully ran your infrastructure code by applying your Terraform execution plan, the state of your workspace changes to `Active`.   **Connecting**: Schematics tries to connect to the template in your source repo. If successfully connected, the template is downloaded and metadata, such as input parameters, is extracted. After the template is downloaded, the state of the workspace changes to `Scanning`.   **Draft**: The workspace is created without a reference to a GitHub or GitLab repository.   **Failed**: If errors occur during the execution of your infrastructure code in IBM Cloud Schematics, your workspace status is set to `Failed`.   **Inactive**: The Terraform template was scanned successfully and the workspace creation is complete. You can now start running Schematics plan and apply actions to provision the IBM Cloud resources that you specified in your template. If you have an `Active` workspace and decide to remove all your resources, your workspace is set to `Inactive` after all your resources are removed.   **In progress**: When you instruct IBM Cloud Schematics to run your infrastructure code by applying your Terraform execution plan, the status of our workspace changes to `In progress`.   **Scanning**: The download of the Terraform template is complete and vulnerability scanning started. If the scan is successful, the workspace state changes to `Inactive`. If errors in your template are found, the state changes to `Template Error`.   **Stopped**: The Schematics plan, apply, or destroy action was cancelled manually.   **Template Error**: The Schematics template contains errors and cannot be processed.",
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
@@ -462,13 +467,10 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	workspaceResponse, response, err := schematicsClient.GetWorkspaceWithContext(context, getWorkspaceOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetWorkspaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("GetWorkspaceWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*workspaceResponse.ID)
-	if err = d.Set("applied_shareddata_ids", workspaceResponse.AppliedShareddataIds); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting applied_shareddata_ids: %s", err))
-	}
+	d.SetId(fmt.Sprintf("%s", *getWorkspaceOptions.WID))
 
 	if workspaceResponse.CatalogRef != nil {
 		err = d.Set("catalog_ref", dataSourceWorkspaceResponseFlattenCatalogRef(*workspaceResponse.CatalogRef))
@@ -476,7 +478,7 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 			return diag.FromErr(fmt.Errorf("Error setting catalog_ref %s", err))
 		}
 	}
-	if err = d.Set("created_at", workspaceResponse.CreatedAt.String()); err != nil {
+	if err = d.Set("created_at", dateTimeToString(workspaceResponse.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("created_by", workspaceResponse.CreatedBy); err != nil {
@@ -488,7 +490,8 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	if err = d.Set("description", workspaceResponse.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
-	if err = d.Set("last_health_check_at", workspaceResponse.LastHealthCheckAt.String()); err != nil {
+
+	if err = d.Set("last_health_check_at", dateTimeToString(workspaceResponse.LastHealthCheckAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting last_health_check_at: %s", err))
 	}
 	if err = d.Set("location", workspaceResponse.Location); err != nil {
@@ -516,9 +519,6 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	}
 	if err = d.Set("status", workspaceResponse.Status); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
-	}
-	if err = d.Set("tags", workspaceResponse.Tags); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
 	}
 
 	if workspaceResponse.TemplateData != nil {
@@ -647,6 +647,9 @@ func dataSourceWorkspaceResponseCatalogRefToMap(catalogRefItem schematicsv1.Cata
 	if catalogRefItem.DryRun != nil {
 		catalogRefMap["dry_run"] = catalogRefItem.DryRun
 	}
+	if catalogRefItem.OwningAccount != nil {
+		catalogRefMap["owning_account"] = catalogRefItem.OwningAccount
+	}
 	if catalogRefItem.ItemIconURL != nil {
 		catalogRefMap["item_icon_url"] = catalogRefItem.ItemIconURL
 	}
@@ -764,6 +767,9 @@ func dataSourceWorkspaceResponseTemplateDataToMap(templateDataItem schematicsv1.
 	}
 	if templateDataItem.Folder != nil {
 		templateDataMap["folder"] = templateDataItem.Folder
+	}
+	if templateDataItem.Compact != nil {
+		templateDataMap["compact"] = templateDataItem.Compact
 	}
 	if templateDataItem.HasGithubtoken != nil {
 		templateDataMap["has_githubtoken"] = templateDataItem.HasGithubtoken

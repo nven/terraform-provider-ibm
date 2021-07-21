@@ -35,7 +35,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"applied_shareddata_ids": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "List of applied shared dataset id.",
+				Description: "List of applied shared dataset ID.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"catalog_ref": &schema.Schema{
@@ -49,6 +49,11 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "Dry run.",
+						},
+						"owning_account": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Owning account ID of the catalog.",
 						},
 						"item_icon_url": &schema.Schema{
 							Type:        schema.TypeString,
@@ -130,12 +135,12 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"cluster_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Cluster name.",
+							Description: "The cluster name.",
 						},
 						"cluster_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Cluster type.",
+							Description: "The cluster type.",
 						},
 						"entitlement_keys": &schema.Schema{
 							Type:        schema.TypeList,
@@ -161,12 +166,12 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"worker_count": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "Cluster worker count.",
+							Description: "The cluster worker count.",
 						},
 						"worker_machine_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Cluster worker type.",
+							Description: "The cluster worker type.",
 						},
 					},
 				},
@@ -349,7 +354,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace CRN.",
+				Description: "The workspace CRN.",
 			},
 			"last_health_check_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -410,7 +415,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The status of the workspace.  **Active**: After you successfully ran your infrastructure code by applying your Terraform execution plan, the state of your workspace changes to `Active`.  **Connecting**: Schematics tries to connect to the template in your source repo. If successfully connected, the template is downloaded and metadata, such as input parameters, is extracted. After the template is downloaded, the state of the workspace changes to `Scanning`.  **Draft**: The workspace is created without a reference to a GitHub or GitLab repository.  **Failed**: If errors occur during the execution of your infrastructure code in IBM Cloud Schematics, your workspace status is set to `Failed`.  **Inactive**: The Terraform template was scanned successfully and the workspace creation is complete. You can now start running Schematics plan and apply actions to provision the IBM Cloud resources that you specified in your template. If you have an `Active` workspace and decide to remove all your resources, your workspace is set to `Inactive` after all your resources are removed.  **In progress**: When you instruct IBM Cloud Schematics to run your infrastructure code by applying your Terraform execution plan, the status of our workspace changes to `In progress`.  **Scanning**: The download of the Terraform template is complete and vulnerability scanning started. If the scan is successful, the workspace state changes to `Inactive`. If errors in your template are found, the state changes to `Template Error`.  **Stopped**: The Schematics plan, apply, or destroy action was cancelled manually.  **Template Error**: The Schematics template contains errors and cannot be processed.",
+				Description: "The status of the workspace.   **Active**: After you successfully ran your infrastructure code by applying your Terraform execution plan, the state of your workspace changes to `Active`.   **Connecting**: Schematics tries to connect to the template in your source repo. If successfully connected, the template is downloaded and metadata, such as input parameters, is extracted. After the template is downloaded, the state of the workspace changes to `Scanning`.   **Draft**: The workspace is created without a reference to a GitHub or GitLab repository.   **Failed**: If errors occur during the execution of your infrastructure code in IBM Cloud Schematics, your workspace status is set to `Failed`.   **Inactive**: The Terraform template was scanned successfully and the workspace creation is complete. You can now start running Schematics plan and apply actions to provision the IBM Cloud resources that you specified in your template. If you have an `Active` workspace and decide to remove all your resources, your workspace is set to `Inactive` after all your resources are removed.   **In progress**: When you instruct IBM Cloud Schematics to run your infrastructure code by applying your Terraform execution plan, the status of our workspace changes to `In progress`.   **Scanning**: The download of the Terraform template is complete and vulnerability scanning started. If the scan is successful, the workspace state changes to `Inactive`. If errors in your template are found, the state changes to `Template Error`.   **Stopped**: The Schematics plan, apply, or destroy action was cancelled manually.   **Template Error**: The Schematics template contains errors and cannot be processed.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -622,7 +627,6 @@ func resourceIBMSchematicsWorkspaceCreate(context context.Context, d *schema.Res
 		workspaceStatus := resourceIBMSchematicsWorkspaceMapToWorkspaceStatusRequest(workspaceStatusRequestMap)
 		createWorkspaceOptions.SetWorkspaceStatus(&workspaceStatus)
 	}
-
 	if _, ok := d.GetOk("x_github_token"); ok {
 		createWorkspaceOptions.SetXGithubToken(d.Get("x_github_token").(string))
 	}
@@ -630,7 +634,7 @@ func resourceIBMSchematicsWorkspaceCreate(context context.Context, d *schema.Res
 	workspaceResponse, response, err := schematicsClient.CreateWorkspaceWithContext(context, createWorkspaceOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateWorkspaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("CreateWorkspaceWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*workspaceResponse.ID)
@@ -643,6 +647,9 @@ func resourceIBMSchematicsWorkspaceMapToCatalogRef(catalogRefMap map[string]inte
 
 	if catalogRefMap["dry_run"] != nil {
 		catalogRef.DryRun = core.BoolPtr(catalogRefMap["dry_run"].(bool))
+	}
+	if catalogRefMap["owning_account"] != nil {
+		catalogRef.OwningAccount = core.StringPtr(catalogRefMap["owning_account"].(string))
 	}
 	if catalogRefMap["item_icon_url"] != nil {
 		catalogRef.ItemIconURL = core.StringPtr(catalogRefMap["item_icon_url"].(string))
@@ -722,6 +729,9 @@ func resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSource
 	}
 	if templateSourceDataRequestMap["folder"] != nil {
 		templateSourceDataRequest.Folder = core.StringPtr(templateSourceDataRequestMap["folder"].(string))
+	}
+	if templateSourceDataRequestMap["compact"] != nil {
+		templateSourceDataRequest.Compact = core.BoolPtr(templateSourceDataRequestMap["compact"].(bool))
 	}
 	if templateSourceDataRequestMap["init_state_file"] != nil {
 		templateSourceDataRequest.InitStateFile = core.StringPtr(templateSourceDataRequestMap["init_state_file"].(string))
@@ -898,7 +908,7 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 			return nil
 		}
 		log.Printf("[DEBUG] GetWorkspaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("GetWorkspaceWithContext failed %s\n%s", err, response))
 	}
 
 	if workspaceResponse.AppliedShareddataIds != nil {
@@ -1072,14 +1082,33 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 func resourceIBMSchematicsWorkspaceCatalogRefToMap(catalogRef schematicsv1.CatalogRef) map[string]interface{} {
 	catalogRefMap := map[string]interface{}{}
 
-	catalogRefMap["dry_run"] = catalogRef.DryRun
-	catalogRefMap["item_icon_url"] = catalogRef.ItemIconURL
-	catalogRefMap["item_id"] = catalogRef.ItemID
-	catalogRefMap["item_name"] = catalogRef.ItemName
-	catalogRefMap["item_readme_url"] = catalogRef.ItemReadmeURL
-	catalogRefMap["item_url"] = catalogRef.ItemURL
-	catalogRefMap["launch_url"] = catalogRef.LaunchURL
-	catalogRefMap["offering_version"] = catalogRef.OfferingVersion
+	if catalogRef.DryRun != nil {
+		catalogRefMap["dry_run"] = catalogRef.DryRun
+	}
+	if catalogRef.OwningAccount != nil {
+		catalogRefMap["owning_account"] = catalogRef.OwningAccount
+	}
+	if catalogRef.ItemIconURL != nil {
+		catalogRefMap["item_icon_url"] = catalogRef.ItemIconURL
+	}
+	if catalogRef.ItemID != nil {
+		catalogRefMap["item_id"] = catalogRef.ItemID
+	}
+	if catalogRef.ItemName != nil {
+		catalogRefMap["item_name"] = catalogRef.ItemName
+	}
+	if catalogRef.ItemReadmeURL != nil {
+		catalogRefMap["item_readme_url"] = catalogRef.ItemReadmeURL
+	}
+	if catalogRef.ItemURL != nil {
+		catalogRefMap["item_url"] = catalogRef.ItemURL
+	}
+	if catalogRef.LaunchURL != nil {
+		catalogRefMap["launch_url"] = catalogRef.LaunchURL
+	}
+	if catalogRef.OfferingVersion != nil {
+		catalogRefMap["offering_version"] = catalogRef.OfferingVersion
+	}
 
 	return catalogRefMap
 }
@@ -1087,10 +1116,18 @@ func resourceIBMSchematicsWorkspaceCatalogRefToMap(catalogRef schematicsv1.Catal
 func resourceIBMSchematicsWorkspaceSharedTargetDataToMap(sharedTargetData schematicsv1.SharedTargetData) map[string]interface{} {
 	sharedTargetDataMap := map[string]interface{}{}
 
-	sharedTargetDataMap["cluster_created_on"] = sharedTargetData.ClusterCreatedOn
-	sharedTargetDataMap["cluster_id"] = sharedTargetData.ClusterID
-	sharedTargetDataMap["cluster_name"] = sharedTargetData.ClusterName
-	sharedTargetDataMap["cluster_type"] = sharedTargetData.ClusterType
+	if sharedTargetData.ClusterCreatedOn != nil {
+		sharedTargetDataMap["cluster_created_on"] = sharedTargetData.ClusterCreatedOn
+	}
+	if sharedTargetData.ClusterID != nil {
+		sharedTargetDataMap["cluster_id"] = sharedTargetData.ClusterID
+	}
+	if sharedTargetData.ClusterName != nil {
+		sharedTargetDataMap["cluster_name"] = sharedTargetData.ClusterName
+	}
+	if sharedTargetData.ClusterType != nil {
+		sharedTargetDataMap["cluster_type"] = sharedTargetData.ClusterType
+	}
 	if sharedTargetData.EntitlementKeys != nil {
 		entitlementKeys := []interface{}{}
 		for _, entitlementKeysItem := range sharedTargetData.EntitlementKeys {
@@ -1098,11 +1135,21 @@ func resourceIBMSchematicsWorkspaceSharedTargetDataToMap(sharedTargetData schema
 		}
 		sharedTargetDataMap["entitlement_keys"] = entitlementKeys
 	}
-	sharedTargetDataMap["namespace"] = sharedTargetData.Namespace
-	sharedTargetDataMap["region"] = sharedTargetData.Region
-	sharedTargetDataMap["resource_group_id"] = sharedTargetData.ResourceGroupID
-	sharedTargetDataMap["worker_count"] = intValue(sharedTargetData.WorkerCount)
-	sharedTargetDataMap["worker_machine_type"] = sharedTargetData.WorkerMachineType
+	if sharedTargetData.Namespace != nil {
+		sharedTargetDataMap["namespace"] = sharedTargetData.Namespace
+	}
+	if sharedTargetData.Region != nil {
+		sharedTargetDataMap["region"] = sharedTargetData.Region
+	}
+	if sharedTargetData.ResourceGroupID != nil {
+		sharedTargetDataMap["resource_group_id"] = sharedTargetData.ResourceGroupID
+	}
+	if sharedTargetData.WorkerCount != nil {
+		sharedTargetDataMap["worker_count"] = intValue(sharedTargetData.WorkerCount)
+	}
+	if sharedTargetData.WorkerMachineType != nil {
+		sharedTargetDataMap["worker_machine_type"] = sharedTargetData.WorkerMachineType
+	}
 
 	return sharedTargetDataMap
 }
@@ -1136,11 +1183,24 @@ func resourceIBMSchematicsWorkspaceTemplateSourceDataRequestToMap(templateSource
 		}
 		templateSourceDataRequestMap["env_values"] = envValues
 	}
-	templateSourceDataRequestMap["folder"] = templateSourceDataRequest.Folder
-	templateSourceDataRequestMap["init_state_file"] = templateSourceDataRequest.InitStateFile
-	templateSourceDataRequestMap["type"] = templateSourceDataRequest.Type
-	templateSourceDataRequestMap["uninstall_script_name"] = templateSourceDataRequest.UninstallScriptName
-	templateSourceDataRequestMap["values"] = templateSourceDataRequest.Values
+	if templateSourceDataRequest.Folder != nil {
+		templateSourceDataRequestMap["folder"] = templateSourceDataRequest.Folder
+	}
+	if templateSourceDataRequest.Compact != nil {
+		templateSourceDataRequestMap["compact"] = templateSourceDataRequest.Compact
+	}
+	if templateSourceDataRequest.InitStateFile != nil {
+		templateSourceDataRequestMap["init_state_file"] = templateSourceDataRequest.InitStateFile
+	}
+	if templateSourceDataRequest.Type != nil {
+		templateSourceDataRequestMap["type"] = templateSourceDataRequest.Type
+	}
+	if templateSourceDataRequest.UninstallScriptName != nil {
+		templateSourceDataRequestMap["uninstall_script_name"] = templateSourceDataRequest.UninstallScriptName
+	}
+	if templateSourceDataRequest.Values != nil {
+		templateSourceDataRequestMap["values"] = templateSourceDataRequest.Values
+	}
 	if templateSourceDataRequest.ValuesMetadata != nil {
 		valuesMetadata := []interface{}{}
 		for _, valuesMetadataItem := range templateSourceDataRequest.ValuesMetadata {
@@ -1229,11 +1289,21 @@ func resourceIBMSchematicsWorkspaceWorkspaceVariableResponseToMap(workspaceVaria
 func resourceIBMSchematicsWorkspaceTemplateRepoRequestToMap(templateRepoRequest schematicsv1.TemplateRepoRequest) map[string]interface{} {
 	templateRepoRequestMap := map[string]interface{}{}
 
-	templateRepoRequestMap["branch"] = templateRepoRequest.Branch
-	templateRepoRequestMap["release"] = templateRepoRequest.Release
-	templateRepoRequestMap["repo_sha_value"] = templateRepoRequest.RepoShaValue
-	templateRepoRequestMap["repo_url"] = templateRepoRequest.RepoURL
-	templateRepoRequestMap["url"] = templateRepoRequest.URL
+	if templateRepoRequest.Branch != nil {
+		templateRepoRequestMap["branch"] = templateRepoRequest.Branch
+	}
+	if templateRepoRequest.Release != nil {
+		templateRepoRequestMap["release"] = templateRepoRequest.Release
+	}
+	if templateRepoRequest.RepoShaValue != nil {
+		templateRepoRequestMap["repo_sha_value"] = templateRepoRequest.RepoShaValue
+	}
+	if templateRepoRequest.RepoURL != nil {
+		templateRepoRequestMap["repo_url"] = templateRepoRequest.RepoURL
+	}
+	if templateRepoRequest.URL != nil {
+		templateRepoRequestMap["url"] = templateRepoRequest.URL
+	}
 
 	return templateRepoRequestMap
 }
@@ -1303,7 +1373,9 @@ func resourceIBMSchematicsWorkspaceTemplateRunTimeDataResponseToMap(templateRunT
 		}
 		templateRunTimeDataResponseMap["resources"] = resources
 	}
-	templateRunTimeDataResponseMap["state_store_url"] = templateRunTimeDataResponse.StateStoreURL
+	if templateRunTimeDataResponse.StateStoreURL != nil {
+		templateRunTimeDataResponseMap["state_store_url"] = templateRunTimeDataResponse.StateStoreURL
+	}
 
 	return templateRunTimeDataResponseMap
 }
@@ -1311,8 +1383,12 @@ func resourceIBMSchematicsWorkspaceTemplateRunTimeDataResponseToMap(templateRunT
 func resourceIBMSchematicsWorkspaceWorkspaceStatusMessageToMap(workspaceStatusMessage schematicsv1.WorkspaceStatusMessage) map[string]interface{} {
 	workspaceStatusMessageMap := map[string]interface{}{}
 
-	workspaceStatusMessageMap["status_code"] = workspaceStatusMessage.StatusCode
-	workspaceStatusMessageMap["status_msg"] = workspaceStatusMessage.StatusMsg
+	if workspaceStatusMessage.StatusCode != nil {
+		workspaceStatusMessageMap["status_code"] = workspaceStatusMessage.StatusCode
+	}
+	if workspaceStatusMessage.StatusMsg != nil {
+		workspaceStatusMessageMap["status_msg"] = workspaceStatusMessage.StatusMsg
+	}
 
 	return workspaceStatusMessageMap
 }
@@ -1476,7 +1552,7 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		_, response, err := schematicsClient.UpdateWorkspaceWithContext(context, updateWorkspaceOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateWorkspaceWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			return diag.FromErr(fmt.Errorf("UpdateWorkspaceWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -1504,7 +1580,7 @@ func resourceIBMSchematicsWorkspaceDelete(context context.Context, d *schema.Res
 	_, response, err := schematicsClient.DeleteWorkspaceWithContext(context, deleteWorkspaceOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteWorkspaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("DeleteWorkspaceWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

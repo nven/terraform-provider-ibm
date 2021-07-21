@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package ibm
@@ -22,7 +22,7 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"action_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Use GET or actions API to look up the action IDs in your IBM Cloud account.",
+				Description: "Action Id.  Use GET /actions API to look up the Action Ids in your IBM Cloud account.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -37,12 +37,12 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "List of action locations supported by IBM Cloud Schematics service.  **Note** this does not limit the location of the resources provisioned using Schematics.",
+				Description: "List of workspace locations supported by IBM Cloud Schematics service.  Note, this does not limit the location of the resources provisioned using Schematics.",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource-group name for an action.  By default, action is created in default resource group.",
+				Description: "Resource-group name for the Action.  By default, Action will be created in Default Resource Group.",
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
@@ -61,17 +61,17 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "User defined states  * `draft` Object can be modified, and can be used by jobs run by an author, during execution  * `live` Object can be modified, and can be used by jobs during execution  * `locked` Object cannot be modified, and can be used by jobs during execution  * `disable` Object can be modified, and cannot be used by Jobs during execution.",
+							Description: "User-defined states  * `draft` Object can be modified; can be used by Jobs run by the author, during execution  * `live` Object can be modified; can be used by Jobs during execution  * `locked` Object cannot be modified; can be used by Jobs during execution  * `disable` Object can be modified. cannot be used by Jobs during execution.",
 						},
 						"set_by": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the user who set the state of an Object.",
+							Description: "Name of the User who set the state of the Object.",
 						},
 						"set_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "When the user who set the state of an Object.",
+							Description: "When the User who set the state of the Object.",
 						},
 					},
 				},
@@ -79,7 +79,7 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"source_readme_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "URL of the `README` file, for the source.",
+				Description: "URL of the README file, for the source.",
 			},
 			"source": &schema.Schema{
 				Type:        schema.TypeList,
@@ -98,6 +98,11 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 							Description: "Connection details to Git source.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									"computed_git_repo_url": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The Complete URL which is computed by git_repo_url, git_repo_folder and branch.",
+									},
 									"git_repo_url": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -126,6 +131,50 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 								},
 							},
 						},
+						"catalog": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Connection details to IBM Cloud Catalog source.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"catalog_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "name of the private catalog.",
+									},
+									"offering_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name of the offering in the IBM Catalog.",
+									},
+									"offering_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Version string of the offering in the IBM Catalog.",
+									},
+									"offering_kind": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Type of the offering, in the IBM Catalog.",
+									},
+									"offering_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Id of the offering the IBM Catalog.",
+									},
+									"offering_version_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Id of the offering version the IBM Catalog.",
+									},
+									"offering_repo_url": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Repo Url of the offering, in the IBM Catalog.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -137,103 +186,150 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"command_parameter": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Schematics job command parameter (playbook-name, capsule-name or flow-name).",
+				Description: "Schematics job command parameter (playbook-name).",
 			},
 			"bastion": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Complete target details with the user inputs and the system generated data.",
+				Description: "Describes a bastion resource.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Target name.",
+							Description: "Bastion Name(Unique).",
 						},
-						"type": &schema.Schema{
+						"host": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Target type (`cluster`, `vsi`, `icd`, `vpc`).",
-						},
-						"description": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Target description.",
-						},
-						"resource_query": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Resource selection query string.",
-						},
-						"credential_ref": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Override credential for each resource.  Reference to credentials values, used by all the resources.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Target ID.",
-						},
-						"created_at": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Targets creation time.",
-						},
-						"created_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "E-mail address of the user who created the targets.",
-						},
-						"updated_at": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Targets updation time.",
-						},
-						"updated_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "E-mail address of user who updated the targets.",
-						},
-						"sys_lock": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "System lock status.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"sys_locked": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "Is the Workspace locked by the Schematic action ?.",
-									},
-									"sys_locked_by": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Name of the user who performed the action, that lead to lock the Workspace.",
-									},
-									"sys_locked_at": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "When the user performed the action that lead to lock the Workspace ?.",
-									},
-								},
-							},
-						},
-						"resource_ids": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Array of the resource IDs.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
+							Description: "Reference to the Inventory resource definition.",
 						},
 					},
 				},
 			},
-			"targets_ini": &schema.Schema{
+			"inventory": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Inventory of host and host group for the playbook in `INI` file format. For example, `\"targets_ini\": \"[webserverhost]  172.22.192.6  [dbhost]  172.22.192.5\"`. For more information, about an inventory host group syntax, see [Inventory host groups](/docs/schematics?topic=schematics-schematics-cli-reference#schematics-inventory-host-grps).",
+				Description: "Target inventory record ID, used by the action or ansible playbook.",
+			},
+			"bastion_credential": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "User editable variable data & system generated reference to value.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the variable.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Value for the variable or reference to the value.",
+						},
+						"metadata": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "User editable metadata for the variables.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Type of the variable.",
+									},
+									"aliases": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "List of aliases for the variable name.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Description of the meta data.",
+									},
+									"default_value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Default value for the variable, if the override value is not specified.",
+									},
+									"secure": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Is the variable secure or sensitive ?.",
+									},
+									"immutable": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Is the variable readonly ?.",
+									},
+									"hidden": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "If true, the variable will not be displayed on UI or CLI.",
+									},
+									"options": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"min_value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Minimum value of the variable. Applicable for integer type.",
+									},
+									"max_value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Maximum value of the variable. Applicable for integer type.",
+									},
+									"min_length": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Minimum length of the variable value. Applicable for string type.",
+									},
+									"max_length": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Maximum length of the variable value. Applicable for string type.",
+									},
+									"matches": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Regex for the variable value.",
+									},
+									"position": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Relative position of this variable in a list.",
+									},
+									"group_by": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Display name of the group this variable belongs to.",
+									},
+									"source": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Source of this meta-data.",
+									},
+								},
+							},
+						},
+						"link": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Reference link to the variable value By default the expression will point to self.value.",
+						},
+					},
+				},
 			},
 			"credentials": &schema.Schema{
 				Type:        schema.TypeList,
@@ -357,7 +453,7 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"action_inputs": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Input variables for an action.",
+				Description: "Input variables for the Action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -476,7 +572,7 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"action_outputs": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Output variables for an action.",
+				Description: "Output variables for the Action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -595,7 +691,7 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"settings": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Environment variables for an action.",
+				Description: "Environment variables for the Action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -711,11 +807,6 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 					},
 				},
 			},
-			"trigger_record_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID to the trigger.",
-			},
 			"id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -729,7 +820,7 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"account": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Action account ID.",
+				Description: "Action account id.",
 			},
 			"source_created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -739,17 +830,17 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"source_created_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "E-mail address of user who created the Action Playbook Source.",
+				Description: "Email address of user who created the Action Playbook Source.",
 			},
 			"source_updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The action playbook updation time.",
+				Description: "Action Playbook updation time.",
 			},
 			"source_updated_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "E-mail address of user who updated the action playbook source.",
+				Description: "Email address of user who updated the Action Playbook Source.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -759,7 +850,7 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"created_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "E-mail address of the user who created an action.",
+				Description: "Email address of user who created the action.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -769,17 +860,12 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"updated_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "E-mail address of the user who updated an action.",
-			},
-			"namespace": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the namespace.",
+				Description: "Email address of user who updated the action.",
 			},
 			"state": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Computed state of an action.",
+				Description: "Computed state of the Action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"status_code": &schema.Schema{
@@ -803,7 +889,7 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 			"playbook_names": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Playbook names retrieved from the respository.",
+				Description: "Playbook names retrieved from repo.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -817,17 +903,17 @@ func dataSourceIBMSchematicsAction() *schema.Resource {
 						"sys_locked": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Is the Workspace locked by the Schematic action ?.",
+							Description: "Is the automation locked by a Schematic job ?.",
 						},
 						"sys_locked_by": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the user who performed the action, that lead to lock the Workspace.",
+							Description: "Name of the User who performed the job, that lead to the locking of the automation.",
 						},
 						"sys_locked_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "When the user performed the action that lead to lock the Workspace ?.",
+							Description: "When the User performed the job that lead to locking of the automation ?.",
 						},
 					},
 				},
@@ -849,10 +935,10 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	action, response, err := schematicsClient.GetActionWithContext(context, getActionOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetActionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("GetActionWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*action.ID)
+	d.SetId(fmt.Sprintf("%s", *getActionOptions.ActionID))
 	if err = d.Set("name", action.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -864,9 +950,6 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	}
 	if err = d.Set("resource_group", action.ResourceGroup); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
-	}
-	if err = d.Set("tags", action.Tags); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
 	}
 
 	if action.UserState != nil {
@@ -898,8 +981,15 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf("Error setting bastion %s", err))
 		}
 	}
-	if err = d.Set("targets_ini", action.TargetsIni); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting targets_ini: %s", err))
+	if err = d.Set("inventory", action.Inventory); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting inventory: %s", err))
+	}
+
+	if action.BastionCredential != nil {
+		err = d.Set("bastion_credential", dataSourceActionFlattenBastionCredential(*action.BastionCredential))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting bastion_credential %s", err))
+		}
 	}
 
 	if action.Credentials != nil {
@@ -929,9 +1019,6 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf("Error setting settings %s", err))
 		}
 	}
-	if err = d.Set("trigger_record_id", action.TriggerRecordID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting trigger_record_id: %s", err))
-	}
 	if err = d.Set("id", action.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
@@ -941,40 +1028,29 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if err = d.Set("account", action.Account); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting account: %s", err))
 	}
-	if action.SourceCreatedAt != nil {
-		if err = d.Set("source_created_at", action.SourceCreatedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting source_created_at: %s", err))
-		}
+	if err = d.Set("source_created_at", dateTimeToString(action.SourceCreatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting source_created_at: %s", err))
 	}
 	if err = d.Set("source_created_by", action.SourceCreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting source_created_by: %s", err))
 	}
-	if action.SourceUpdatedAt != nil {
-		if err = d.Set("source_updated_at", action.SourceUpdatedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting source_updated_at: %s", err))
-		}
+	if err = d.Set("source_updated_at", dateTimeToString(action.SourceUpdatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting source_updated_at: %s", err))
 	}
 	if err = d.Set("source_updated_by", action.SourceUpdatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting source_updated_by: %s", err))
 	}
-	if action.CreatedAt != nil {
-		if err = d.Set("created_at", action.CreatedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-		}
+	if err = d.Set("created_at", dateTimeToString(action.CreatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("created_by", action.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if action.UpdatedAt != nil {
-		if err = d.Set("updated_at", action.UpdatedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-		}
+	if err = d.Set("updated_at", dateTimeToString(action.UpdatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("updated_by", action.UpdatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
-	}
-	if err = d.Set("namespace", action.Namespace); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting namespace: %s", err))
 	}
 
 	if action.State != nil {
@@ -982,14 +1058,6 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting state %s", err))
 		}
-	}
-
-	if action.PlaybookNames != nil {
-		if err = d.Set("playbook_names", action.PlaybookNames); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting playbook_names: %s", err))
-		}
-	} else {
-		d.Set("playbook_names", []string{})
 	}
 
 	if action.SysLock != nil {
@@ -1046,6 +1114,12 @@ func dataSourceActionSourceToMap(sourceItem schematicsv1.ExternalSource) (source
 		gitList = append(gitList, gitMap)
 		sourceMap["git"] = gitList
 	}
+	if sourceItem.Catalog != nil {
+		catalogList := []map[string]interface{}{}
+		catalogMap := dataSourceActionSourceCatalogToMap(*sourceItem.Catalog)
+		catalogList = append(catalogList, catalogMap)
+		sourceMap["catalog"] = catalogList
+	}
 
 	return sourceMap
 }
@@ -1053,6 +1127,9 @@ func dataSourceActionSourceToMap(sourceItem schematicsv1.ExternalSource) (source
 func dataSourceActionSourceGitToMap(gitItem schematicsv1.ExternalSourceGit) (gitMap map[string]interface{}) {
 	gitMap = map[string]interface{}{}
 
+	if gitItem.ComputedGitRepoURL != nil {
+		gitMap["computed_git_repo_url"] = gitItem.ComputedGitRepoURL
+	}
 	if gitItem.GitRepoURL != nil {
 		gitMap["git_repo_url"] = gitItem.GitRepoURL
 	}
@@ -1072,7 +1149,35 @@ func dataSourceActionSourceGitToMap(gitItem schematicsv1.ExternalSourceGit) (git
 	return gitMap
 }
 
-func dataSourceActionFlattenBastion(result schematicsv1.TargetResourceset) (finalList []map[string]interface{}) {
+func dataSourceActionSourceCatalogToMap(catalogItem schematicsv1.ExternalSourceCatalog) (catalogMap map[string]interface{}) {
+	catalogMap = map[string]interface{}{}
+
+	if catalogItem.CatalogName != nil {
+		catalogMap["catalog_name"] = catalogItem.CatalogName
+	}
+	if catalogItem.OfferingName != nil {
+		catalogMap["offering_name"] = catalogItem.OfferingName
+	}
+	if catalogItem.OfferingVersion != nil {
+		catalogMap["offering_version"] = catalogItem.OfferingVersion
+	}
+	if catalogItem.OfferingKind != nil {
+		catalogMap["offering_kind"] = catalogItem.OfferingKind
+	}
+	if catalogItem.OfferingID != nil {
+		catalogMap["offering_id"] = catalogItem.OfferingID
+	}
+	if catalogItem.OfferingVersionID != nil {
+		catalogMap["offering_version_id"] = catalogItem.OfferingVersionID
+	}
+	if catalogItem.OfferingRepoURL != nil {
+		catalogMap["offering_repo_url"] = catalogItem.OfferingRepoURL
+	}
+
+	return catalogMap
+}
+
+func dataSourceActionFlattenBastion(result schematicsv1.BastionResourceDefinition) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceActionBastionToMap(result)
 	finalList = append(finalList, finalMap)
@@ -1080,66 +1185,102 @@ func dataSourceActionFlattenBastion(result schematicsv1.TargetResourceset) (fina
 	return finalList
 }
 
-func dataSourceActionBastionToMap(bastionItem schematicsv1.TargetResourceset) (bastionMap map[string]interface{}) {
+func dataSourceActionBastionToMap(bastionItem schematicsv1.BastionResourceDefinition) (bastionMap map[string]interface{}) {
 	bastionMap = map[string]interface{}{}
 
 	if bastionItem.Name != nil {
 		bastionMap["name"] = bastionItem.Name
 	}
-	if bastionItem.Type != nil {
-		bastionMap["type"] = bastionItem.Type
-	}
-	if bastionItem.Description != nil {
-		bastionMap["description"] = bastionItem.Description
-	}
-	if bastionItem.ResourceQuery != nil {
-		bastionMap["resource_query"] = bastionItem.ResourceQuery
-	}
-	if bastionItem.CredentialRef != nil {
-		bastionMap["credential_ref"] = bastionItem.CredentialRef
-	}
-	if bastionItem.ID != nil {
-		bastionMap["id"] = bastionItem.ID
-	}
-	if bastionItem.CreatedAt != nil {
-		bastionMap["created_at"] = bastionItem.CreatedAt.String()
-	}
-	if bastionItem.CreatedBy != nil {
-		bastionMap["created_by"] = bastionItem.CreatedBy
-	}
-	if bastionItem.UpdatedAt != nil {
-		bastionMap["updated_at"] = bastionItem.UpdatedAt.String()
-	}
-	if bastionItem.UpdatedBy != nil {
-		bastionMap["updated_by"] = bastionItem.UpdatedBy
-	}
-	if bastionItem.SysLock != nil {
-		sysLockList := []map[string]interface{}{}
-		sysLockMap := dataSourceActionBastionSysLockToMap(*bastionItem.SysLock)
-		sysLockList = append(sysLockList, sysLockMap)
-		bastionMap["sys_lock"] = sysLockList
-	}
-	if bastionItem.ResourceIds != nil {
-		bastionMap["resource_ids"] = bastionItem.ResourceIds
+	if bastionItem.Host != nil {
+		bastionMap["host"] = bastionItem.Host
 	}
 
 	return bastionMap
 }
 
-func dataSourceActionBastionSysLockToMap(sysLockItem schematicsv1.SystemLock) (sysLockMap map[string]interface{}) {
-	sysLockMap = map[string]interface{}{}
+func dataSourceActionFlattenBastionCredential(result schematicsv1.VariableData) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceActionBastionCredentialToMap(result)
+	finalList = append(finalList, finalMap)
 
-	if sysLockItem.SysLocked != nil {
-		sysLockMap["sys_locked"] = sysLockItem.SysLocked
+	return finalList
+}
+
+func dataSourceActionBastionCredentialToMap(bastionCredentialItem schematicsv1.VariableData) (bastionCredentialMap map[string]interface{}) {
+	bastionCredentialMap = map[string]interface{}{}
+
+	if bastionCredentialItem.Name != nil {
+		bastionCredentialMap["name"] = bastionCredentialItem.Name
 	}
-	if sysLockItem.SysLockedBy != nil {
-		sysLockMap["sys_locked_by"] = sysLockItem.SysLockedBy
+	if bastionCredentialItem.Value != nil {
+		bastionCredentialMap["value"] = bastionCredentialItem.Value
 	}
-	if sysLockItem.SysLockedAt != nil {
-		sysLockMap["sys_locked_at"] = sysLockItem.SysLockedAt.String()
+	if bastionCredentialItem.Metadata != nil {
+		metadataList := []map[string]interface{}{}
+		metadataMap := dataSourceActionBastionCredentialMetadataToMap(*bastionCredentialItem.Metadata)
+		metadataList = append(metadataList, metadataMap)
+		bastionCredentialMap["metadata"] = metadataList
+	}
+	if bastionCredentialItem.Link != nil {
+		bastionCredentialMap["link"] = bastionCredentialItem.Link
 	}
 
-	return sysLockMap
+	return bastionCredentialMap
+}
+
+func dataSourceActionBastionCredentialMetadataToMap(metadataItem schematicsv1.VariableMetadata) (metadataMap map[string]interface{}) {
+	metadataMap = map[string]interface{}{}
+
+	if metadataItem.Type != nil {
+		metadataMap["type"] = metadataItem.Type
+	}
+	if metadataItem.Aliases != nil {
+		metadataMap["aliases"] = metadataItem.Aliases
+	}
+	if metadataItem.Description != nil {
+		metadataMap["description"] = metadataItem.Description
+	}
+	if metadataItem.DefaultValue != nil {
+		metadataMap["default_value"] = metadataItem.DefaultValue
+	}
+	if metadataItem.Secure != nil {
+		metadataMap["secure"] = metadataItem.Secure
+	}
+	if metadataItem.Immutable != nil {
+		metadataMap["immutable"] = metadataItem.Immutable
+	}
+	if metadataItem.Hidden != nil {
+		metadataMap["hidden"] = metadataItem.Hidden
+	}
+	if metadataItem.Options != nil {
+		metadataMap["options"] = metadataItem.Options
+	}
+	if metadataItem.MinValue != nil {
+		metadataMap["min_value"] = metadataItem.MinValue
+	}
+	if metadataItem.MaxValue != nil {
+		metadataMap["max_value"] = metadataItem.MaxValue
+	}
+	if metadataItem.MinLength != nil {
+		metadataMap["min_length"] = metadataItem.MinLength
+	}
+	if metadataItem.MaxLength != nil {
+		metadataMap["max_length"] = metadataItem.MaxLength
+	}
+	if metadataItem.Matches != nil {
+		metadataMap["matches"] = metadataItem.Matches
+	}
+	if metadataItem.Position != nil {
+		metadataMap["position"] = metadataItem.Position
+	}
+	if metadataItem.GroupBy != nil {
+		metadataMap["group_by"] = metadataItem.GroupBy
+	}
+	if metadataItem.Source != nil {
+		metadataMap["source"] = metadataItem.Source
+	}
+
+	return metadataMap
 }
 
 func dataSourceActionFlattenCredentials(result []schematicsv1.VariableData) (credentials []map[string]interface{}) {
@@ -1227,12 +1368,12 @@ func dataSourceActionCredentialsMetadataToMap(metadataItem schematicsv1.Variable
 	return metadataMap
 }
 
-func dataSourceActionFlattenInputs(result []schematicsv1.VariableData) (inputs []map[string]interface{}) {
-	for _, inputsItem := range result {
-		inputs = append(inputs, dataSourceActionInputsToMap(inputsItem))
+func dataSourceActionFlattenInputs(result []schematicsv1.VariableData) (actionInputs []map[string]interface{}) {
+	for _, actionInputsItem := range result {
+		actionInputs = append(actionInputs, dataSourceActionInputsToMap(actionInputsItem))
 	}
 
-	return inputs
+	return actionInputs
 }
 
 func dataSourceActionInputsToMap(inputsItem schematicsv1.VariableData) (inputsMap map[string]interface{}) {
@@ -1312,12 +1453,12 @@ func dataSourceActionInputsMetadataToMap(metadataItem schematicsv1.VariableMetad
 	return metadataMap
 }
 
-func dataSourceActionFlattenOutputs(result []schematicsv1.VariableData) (outputs []map[string]interface{}) {
-	for _, outputsItem := range result {
-		outputs = append(outputs, dataSourceActionOutputsToMap(outputsItem))
+func dataSourceActionFlattenOutputs(result []schematicsv1.VariableData) (actionOutputs []map[string]interface{}) {
+	for _, actionOutputsItem := range result {
+		actionOutputs = append(actionOutputs, dataSourceActionOutputsToMap(actionOutputsItem))
 	}
 
-	return outputs
+	return actionOutputs
 }
 
 func dataSourceActionOutputsToMap(outputsItem schematicsv1.VariableData) (outputsMap map[string]interface{}) {
